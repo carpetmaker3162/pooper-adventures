@@ -16,7 +16,7 @@ class Entity(pygame.sprite.Sprite):
     def __init__(self, image, startx, starty):
         super().__init__()
 
-        self.image = pygame.image.load(image)
+        self.image = pygame.image.load(image).convert()
         self.rect = self.image.get_rect()
 
         self.rect.center = [startx, starty]
@@ -25,7 +25,7 @@ class Entity(pygame.sprite.Sprite):
         pass
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        screen.blit(self.image, self.rect.center)
 
 class Player(Entity):
     def __init__(self, startx, starty):
@@ -51,9 +51,9 @@ class Game:
         while not self.stopped:
             self.process_events()
             self.clock.tick(self.framecap)
-    
-
 
 if __name__ == "__main__":
     h = Game()
+    p = Player(400, 400)
+    p.draw(h.screen)
     h.loop()
