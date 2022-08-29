@@ -13,23 +13,20 @@ except ImportError:
 pygame.init()
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, image, startx, starty):
+    def __init__(self, image, startx, starty, width = 100, height = 100):
         super().__init__()
 
-        self.image = pygame.image.load(image).convert()
+        self.image = pygame.image.load(image).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (width, height))
         self.rect = self.image.get_rect()
-
+        
         self.rect.center = [startx, starty]
-
-    def update(self):
-        pass
 
     def draw(self, screen):
         screen.blit(self.image, self.rect.center)
-
-class Player(Entity):
-    def __init__(self, startx, starty):
-        super().__init__("assets/canpooper.png", startx, starty)
+    
+    def move(self, x, y):
+        self.rect.move_ip((x, y))
 
 class Game:
     def __init__(self) -> None:
@@ -48,12 +45,22 @@ class Game:
                 exit()
     
     def loop(self):
+        pygame.display.flip()
         while not self.stopped:
             self.process_events()
             self.clock.tick(self.framecap)
 
+class Player(Entity):
+    def __init__(self, startx, starty, width = 100, height = 200):
+        super().__init__("assets/Sports-Ball-Transparent.png", startx, starty, width, height)
+    
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_w]:
+            self.move()
+
 if __name__ == "__main__":
     h = Game()
-    p = Player(400, 400)
+    p = Player(100, 100, 100, 100)
     p.draw(h.screen)
     h.loop()
