@@ -25,8 +25,6 @@ class Entity(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (width, height))
         self.rect = self.image.get_rect()
         self.rect.center = [x + width/2, y + height/2]
-        
-        print(f"loading image {image}")
 
         self.x = x
         self.y = y
@@ -50,10 +48,10 @@ class Player(Entity):
         self.max_x_speed = 5
         self.gravity = 9.807
 
-        self.jump_power = 1
+        self.respawn_x = x
+        self.respawn_y = y
 
-        print(self.rect.bottom)
-        print(self.rect.top)
+        self.jump_power = 1
     
     def move(self, x, y, collidables):
         dx = x
@@ -115,8 +113,10 @@ class Player(Entity):
 class Crate(Entity):
     def __init__(self, x, y, width=200, height=200, hitbox = False):
         super().__init__("assets/crate.png", x, y, width, height, hitbox)
-        print(self.rect.bottom)
-        print(self.rect.top)
+
+class Lava(Entity):
+    def __init__(self, x, y, width=960, height=100, show_hitbox=False):
+        super().__init__("assets/lava.png", x, y, width, height, show_hitbox)
 
 class Game:
     def __init__(self, fps) -> None:
