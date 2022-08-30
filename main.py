@@ -44,7 +44,7 @@ class Entity(pygame.sprite.Sprite):
 
 class Player(Entity):
     def __init__(self, x, y, width = 100, height = 200, hitbox = False):
-        super().__init__("assets/Sports-Ball-Transparent.png", x, y, width, height, hitbox)
+        super().__init__("assets/canpooper.png", x, y, width, height, hitbox)
         self.x_speed = 0
         self.y_speed = 0
         self.max_x_speed = 5
