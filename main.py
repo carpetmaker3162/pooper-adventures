@@ -96,9 +96,11 @@ class Player(Entity):
         #     self.y_speed = 0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x_speed = -self.max_x_speed
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.x_speed = self.max_x_speed
-        elif (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
+        
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             self.y_speed = -self.jump_power * 10
         
         if not on_ground and self.y_speed < 10:
