@@ -78,13 +78,13 @@ class Player(Entity):
     
     def on_ground(self, collidables):
         for entity in collidables:
-            if (entity.rect.top <= self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
+            if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
     def hitting_ceiling(self, collidables):
         for entity in collidables:
-            if (entity.rect.bottom >= self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
+            if (entity.rect.bottom == self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
@@ -103,7 +103,10 @@ class Player(Entity):
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             self.y_speed = -self.jump_power * 10
         
-        if not on_ground and self.y_speed < 10:
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and on_ground:
+            self.x_speed *= 0.6
+        
+        if not on_ground and self.y_speed < 15:
             self.y_speed += self.gravity * 0.06
         
         self.move(self.x_speed, self.y_speed, collidables)
@@ -122,10 +125,12 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 100, 100, 100, True)
+        self.player = Player(100, 50, 50, 50)
 
         self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 200, 400, 400, True))
+        self.collidables.add(Crate(100, 200, 100, 100))
+        self.collidables.add(Crate(400, 200, 100, 100))
+        self.collidables.add(Crate(700, 200, 100, 100))
     
     def process_events(self):
         # process keyboard events
@@ -149,5 +154,5 @@ class Game:
             self.clock.tick(self.framecap)
 
 if __name__ == "__main__":
-    h = Game(60)
+    h = Game(fps=56)
     h.loop()
