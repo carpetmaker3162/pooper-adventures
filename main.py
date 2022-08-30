@@ -2,6 +2,7 @@
 
 import os
 import time
+import numpy as np
 try:
     import pygame
 except ImportError:
@@ -25,6 +26,8 @@ class Entity(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = [x + width/2, y + height/2]
         
+        print(f"loading image {image}")
+
         self.x = x
         self.y = y
 
@@ -34,16 +37,17 @@ class Entity(pygame.sprite.Sprite):
         self.hitbox = show_hitbox
 
     def draw(self, screen):
-        screen.blit(self.image, [self.x, self.y])
         if self.hitbox:
             pygame.draw.rect(screen, pygame.Color(255, 0, 0), self.rect, width = 5)
+        center = np.array(self.rect.center) - (self.width/2, self.height/2)
+        screen.blit(self.image, list(center))
 
 class Player(Entity):
     def __init__(self, x, y, width = 100, height = 200, hitbox = False):
         super().__init__("assets/Sports-Ball-Transparent.png", x, y, width, height, hitbox)
         self.x_speed = 0
         self.y_speed = 0
-        self.max_x_speed = 1
+        self.max_x_speed = 5
         self.gravity = 9.807
 
         self.jump_power = 1
@@ -56,12 +60,12 @@ class Player(Entity):
         dy = y
 
         while self.colliding_at(0, dy, collidables):
-            dy -= sign(dy)
-            self.y += dy
+            dy -= np.sign(dy)
         while self.colliding_at(dx, dy, collidables):
-            dx -= sign(dx)
-            self.x += dx
+            dx -= np.sign(dx)
         
+        self.y += dy
+        self.x += dx
 
         self.rect.move_ip((dx, dy))
     
@@ -74,36 +78,38 @@ class Player(Entity):
     
     def on_ground(self, collidables):
         for entity in collidables:
-            if (entity.rect.top <= self.rect.bottom) and (entity.rect.left >= self.rect.right or entity.rect.right <= self.rect.left):
+            if (entity.rect.top <= self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
     def hitting_ceiling(self, collidables):
         for entity in collidables:
-            if (entity.rect.bottom >= self.rect.top) and (entity.rect.left >= self.rect.right or entity.rect.right <= self.rect.left):
+            if (entity.rect.bottom >= self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
     def update(self, collidables):
         keys = pygame.key.get_pressed()
-        # if self.on_ground(collidables) or self.hitting_ceiling(collidables):
+        on_ground = self.on_ground(collidables)
+        hitting_ceiling = self.hitting_ceiling(collidables)
+        # if on_ground or self.hitting_ceiling(collidables):
         #     self.y_speed = 0
-        
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            pass
+            self.x_speed = -self.max_x_speed
         elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            pass
-        elif keys[pygame.K_UP] or keys[pygame.K_w]:
+            self.x_speed = self.max_x_speed
+        elif (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             self.y_speed = -self.jump_power * 10
         
-        if not self.on_ground(collidables) and self.y_speed < 20:
+        if not on_ground and self.y_speed < 10:
             self.y_speed += self.gravity * 0.06
         
         self.move(self.x_speed, self.y_speed, collidables)
+        self.x_speed = 0
 
 class Crate(Entity):
-    def __init__(self, x, y, hitbox):
-        super().__init__("assets/crate.png", x, y, hitbox)
+    def __init__(self, x, y, width=200, height=200, hitbox = False):
+        super().__init__("assets/crate.png", x, y, width, height, hitbox)
         print(self.rect.bottom)
         print(self.rect.top)
 
@@ -117,7 +123,7 @@ class Game:
         self.player = Player(100, 100, 100, 100, True)
 
         self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 400, True))
+        self.collidables.add(Crate(100, 200, 400, 400, True))
     
     def process_events(self):
         # process keyboard events
