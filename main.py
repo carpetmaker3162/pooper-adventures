@@ -109,14 +109,19 @@ class Player(Entity):
         
         self.move(self.x_speed, self.y_speed, collidables)
         self.x_speed = 0
+    
+    def respawn(self):
+        dx = self.respawn_x - self.x
+        dy = self.respawn_y - self.y
+        self.rect.move_ip((dx, dy))
 
 class Crate(Entity):
-    def __init__(self, x, y, width=200, height=200, hitbox = False):
+    def __init__(self, x, y, width=200, height=200, hitbox=False):
         super().__init__("assets/crate.png", x, y, width, height, hitbox)
 
 class Lava(Entity):
-    def __init__(self, x, y, width=960, height=100, show_hitbox=False):
-        super().__init__("assets/lava.png", x, y, width, height, show_hitbox)
+    def __init__(self, x, y, width=960, height=100, hitbox=False):
+        super().__init__("assets/lava.png", x, y, width, height, hitbox)
 
 class Game:
     def __init__(self, fps) -> None:
@@ -131,6 +136,9 @@ class Game:
         self.collidables.add(Crate(100, 200, 100, 100))
         self.collidables.add(Crate(400, 200, 100, 100))
         self.collidables.add(Crate(700, 200, 100, 100))
+
+        self.fatal = pygame.sprite.Group()
+        self.fatal.add(Lava(0, 540))
     
     def process_events(self):
         # process keyboard events
@@ -146,8 +154,10 @@ class Game:
             
             self.screen.fill((255, 255, 255))
             self.player.update(self.collidables)
+            
             self.player.draw(self.screen)
             self.collidables.draw(self.screen)
+            self.fatal.draw(self.screen)
             
             pygame.display.flip()
             
