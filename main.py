@@ -75,19 +75,19 @@ class Player(Entity):
     
     def on_ground(self, entities):
         for entity in entities:
-            if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
+            if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right or (self.rect.left <= entity.rect.left and self.rect.right >= entity.rect.right)):
                 return True
         return False
     
     def hitting_ceiling(self, entities):
         for entity in entities:
-            if (entity.rect.bottom == self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
+            if (entity.rect.bottom == self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right or (self.rect.left <= entity.rect.left and self.rect.right >= entity.rect.right)):
                 return True
         return False
     
     def update(self, collidables, fatal):
         if pygame.sprite.spritecollideany(self, fatal):
-            self.die(1000)
+            self.die(0)
         
         keys = pygame.key.get_pressed()
         on_ground = self.on_ground(collidables)
@@ -137,7 +137,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 50, 50, True)
+        self.player = Player(100, 50, 150, 150, True)
 
         self.collidables = pygame.sprite.Group()
         self.collidables.add(Crate(100, 200, 100, 100, True))
