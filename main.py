@@ -140,7 +140,7 @@ class Lava(Entity):
 class Game:
     def __init__(self, fps) -> None:
         self.screen = pygame.display.set_mode((960, 640))
-        pygame.display.set_caption("can pooper's adventures in Poopland")
+        pygame.display.set_caption("can pooper's adventures")
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
