@@ -17,7 +17,7 @@ pygame.init()
 pygame.font.init()
 
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, width = 100, height = 100, show_hitbox = False):
+    def __init__(self, image = "assets/none.png", x = 0, y = 0, width = 100, height = 100, show_hitbox = False):
         super().__init__()
 
         self.image = pygame.image.load(image).convert_alpha()
