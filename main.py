@@ -12,6 +12,9 @@ except ImportError:
         os.system("echo 🤡 imagine being on windows")
     else:
         os.system("python3 -m pip install pygame")
+    
+    # Reimport pygame after it's been installed
+    import pygame
 
 pygame.init()
 pygame.font.init()
