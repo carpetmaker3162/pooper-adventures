@@ -15,8 +15,6 @@ except ImportError:
 
 pygame.init()
 
-sign = lambda a: -1 if (abs(a) != a) else 1
-
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image, x, y, width = 100, height = 100, show_hitbox = False):
         super().__init__()
