@@ -45,12 +45,12 @@ class Player(Entity):
         self.x_speed = 0
         self.y_speed = 0
         self.max_x_speed = 5
-        self.gravity = 9.807
+        self.gravity = 1
 
         self.respawn_x = x
         self.respawn_y = y
 
-        self.jump_power = 1
+        self.jump_power = 1.5
     
     def move(self, x, y, collidables):
         dx = x
@@ -101,7 +101,8 @@ class Player(Entity):
         
         if not on_ground:
             if self.y_speed < 15:
-                self.y_speed += self.gravity * 0.06
+                self.y_speed += self.gravity
+                # self.y_speed = 3
         else:
             self.y_speed = 0
 
@@ -180,3 +181,14 @@ if __name__ == "__main__":
     h = Game(fps=56)
     arial = pygame.font.SysFont("Arial", 12)
     h.loop()
+
+"""
+50
+69.1831
+89.8968
+111.7841
+135.0282
+158.7998
+183.9250
+210.4039
+"""
