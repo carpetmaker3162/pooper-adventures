@@ -88,10 +88,13 @@ class Player(Entity):
                 return True
         return False
     
+    def has_reached_objective(self, objectives):
+        return pygame.sprite.spritecollideany(self, objectives) is not None
+    
     def update(self, collidables, fatal):
         if pygame.sprite.spritecollideany(self, fatal):
             self.die(0)
-        
+
         keys = pygame.key.get_pressed()
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
@@ -105,7 +108,6 @@ class Player(Entity):
         if not self.on_ground:
             if self.y_speed < 15:
                 self.y_speed += self.gravity
-                # self.y_speed = 3
         else:
             self.y_speed = 0
 
@@ -137,6 +139,10 @@ class Lava(Entity):
     def __init__(self, x, y, width=960, height=100, hitbox=False):
         super().__init__("assets/lava.png", x, y, width, height, hitbox)
 
+class Objective(Entity):
+    def __init__(self, x, y, width=100, height=100, hitbox=False):
+        super().__init__("assets/burger.png", x, y, width, height, hitbox)
+
 class Game:
     def __init__(self, fps) -> None:
         self.screen = pygame.display.set_mode((960, 640))
@@ -144,7 +150,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 50, 50)
+        self.player = Player(100, 50, 100, 100)
 
         self.collidables = pygame.sprite.Group()
         self.collidables.add(Crate(100, 200, 100, 100))
@@ -153,6 +159,9 @@ class Game:
 
         self.fatal = pygame.sprite.Group()
         self.fatal.add(Lava(0, 540, 960, 100))
+
+        self.objectives = pygame.sprite.Group()
+        self.objectives.add(Objective(800, 100, 100, 100))
     
     def process_events(self):
         # process keyboard events
@@ -167,11 +176,19 @@ class Game:
             pygame.event.pump()
             
             self.screen.fill((255, 255, 255))
+            
+            if self.player.has_reached_objective(self.objectives):
+                message = large_text.render("congratulations you won", False, (0, 0, 0))
+                self.screen.blit(message, (10, 200))
+                pygame.display.flip()
+                self.player.die(1000)
+            
             self.player.update(self.collidables, self.fatal)
             
             self.player.draw(self.screen)
             self.collidables.draw(self.screen)
             self.fatal.draw(self.screen)
+            self.objectives.draw(self.screen)
             
             coordinates = arial.render(f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
             onground = arial.render(f"onGround: {self.player.on_ground}", False, (0, 0, 0))
@@ -188,6 +205,7 @@ class Game:
 if __name__ == "__main__":
     h = Game(fps=56)
     arial = pygame.font.SysFont("Arial", 12)
+    large_text = pygame.font.SysFont("Arial", 40)
     h.loop()
 
 """
