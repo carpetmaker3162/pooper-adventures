@@ -67,31 +67,33 @@ class Player(Entity):
 
         self.rect.move_ip((dx, dy))
     
-    def colliding_at(self, x, y, collidables):
+    def colliding_at(self, x, y, entities):
         # returns group of entities
         self.rect.move_ip((x, y))
-        colliding = pygame.sprite.spritecollideany(self, collidables)
+        colliding = pygame.sprite.spritecollideany(self, entities)
         self.rect.move_ip((-x, -y))
         return colliding
     
-    def on_ground(self, collidables):
-        for entity in collidables:
+    def on_ground(self, entities):
+        for entity in entities:
             if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
-    def hitting_ceiling(self, collidables):
-        for entity in collidables:
+    def hitting_ceiling(self, entities):
+        for entity in entities:
             if (entity.rect.bottom == self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right):
                 return True
         return False
     
-    def update(self, collidables):
+    def update(self, collidables, fatal):
+        if pygame.sprite.spritecollideany(self, fatal):
+            self.die(1000)
+        
         keys = pygame.key.get_pressed()
         on_ground = self.on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
-        # if on_ground or self.hitting_ceiling(collidables):
-        #     self.y_speed = 0
+        
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.x_speed = -self.max_x_speed
         
@@ -101,7 +103,7 @@ class Player(Entity):
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             self.y_speed = -self.jump_power * 10
         
-        if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and on_ground:
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and on_ground:
             self.x_speed *= 0.6
         
         if not on_ground and self.y_speed < 15:
@@ -110,10 +112,13 @@ class Player(Entity):
         self.move(self.x_speed, self.y_speed, collidables)
         self.x_speed = 0
     
-    def respawn(self):
-        dx = self.respawn_x - self.x
-        dy = self.respawn_y - self.y
-        self.rect.move_ip((dx, dy))
+    def die(self, timeout):
+        pygame.time.wait(timeout)
+        self.x_speed = 0
+        self.y_speed = 0
+        self.rect.move_ip((self.respawn_x - self.x, self.respawn_y - self.y))
+        self.x = self.respawn_x
+        self.y = self.respawn_y
 
 class Crate(Entity):
     def __init__(self, x, y, width=200, height=200, hitbox=False):
@@ -130,15 +135,15 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 50, 50)
+        self.player = Player(100, 50, 50, 50, True)
 
         self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 200, 100, 100))
-        self.collidables.add(Crate(400, 200, 100, 100))
-        self.collidables.add(Crate(700, 200, 100, 100))
+        self.collidables.add(Crate(100, 200, 100, 100, True))
+        self.collidables.add(Crate(400, 200, 100, 100, True))
+        self.collidables.add(Crate(700, 200, 100, 100, True))
 
         self.fatal = pygame.sprite.Group()
-        self.fatal.add(Lava(0, 540))
+        self.fatal.add(Lava(0, 540, 960, 100, True))
     
     def process_events(self):
         # process keyboard events
@@ -153,7 +158,7 @@ class Game:
             pygame.event.pump()
             
             self.screen.fill((255, 255, 255))
-            self.player.update(self.collidables)
+            self.player.update(self.collidables, self.fatal)
             
             self.player.draw(self.screen)
             self.collidables.draw(self.screen)
