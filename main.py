@@ -203,7 +203,7 @@ class Game:
             self.clock.tick(self.framecap)
 
 if __name__ == "__main__":
-    h = Game(fps=56)
+    h = Game(fps=60)
     arial = pygame.font.SysFont("Arial", 12)
     large_text = pygame.font.SysFont("Arial", 40)
     h.loop()
