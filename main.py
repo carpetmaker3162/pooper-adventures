@@ -150,18 +150,20 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 100, 100)
+        self.player = Player(100, 50, 50, 50)
 
         self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 200, 100, 100))
-        self.collidables.add(Crate(400, 200, 100, 100))
-        self.collidables.add(Crate(700, 200, 100, 100))
+        self.collidables.add(Crate(100, 200, 60, 60))
+        self.collidables.add(Crate(265, 150, 30, 30))
+        self.collidables.add(Crate(400, 200, 60, 60))
+        self.collidables.add(Crate(565, 150, 30, 30))
+        self.collidables.add(Crate(700, 200, 60, 60))
 
         self.fatal = pygame.sprite.Group()
         self.fatal.add(Lava(0, 540, 960, 100))
 
         self.objectives = pygame.sprite.Group()
-        self.objectives.add(Objective(800, 100, 100, 100))
+        self.objectives.add(Objective(750, 300, 50, 50))
     
     def process_events(self):
         # process keyboard events
