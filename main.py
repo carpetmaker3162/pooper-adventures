@@ -51,6 +51,9 @@ class Player(Entity):
         self.respawn_y = y
 
         self.jump_power = 1.5
+
+        self.crouching = False
+        self.on_ground = False
     
     def move(self, x, y, collidables):
         dx = x
@@ -73,7 +76,7 @@ class Player(Entity):
         self.rect.move_ip((-x, -y))
         return colliding
     
-    def on_ground(self, entities):
+    def is_on_ground(self, entities):
         for entity in entities:
             if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right or (self.rect.left <= entity.rect.left and self.rect.right >= entity.rect.right)):
                 return True
@@ -90,7 +93,7 @@ class Player(Entity):
             self.die(0)
         
         keys = pygame.key.get_pressed()
-        on_ground = self.on_ground(collidables)
+        self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
         
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
@@ -99,18 +102,21 @@ class Player(Entity):
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.x_speed = self.max_x_speed
         
-        if not on_ground:
+        if not self.on_ground:
             if self.y_speed < 15:
                 self.y_speed += self.gravity
                 # self.y_speed = 3
         else:
             self.y_speed = 0
 
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and not self.crouching and self.on_ground:
             self.y_speed = -self.jump_power * 10
         
-        if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and on_ground:
+        self.crouching = False
+
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.on_ground:
             self.x_speed *= 0.6
+            self.crouching = True
         
         self.move(self.x_speed, self.y_speed, collidables)
         self.x_speed = 0
@@ -138,15 +144,15 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 150, 150, True)
+        self.player = Player(100, 50, 50, 50)
 
         self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 200, 100, 100, True))
-        self.collidables.add(Crate(400, 200, 100, 100, True))
-        self.collidables.add(Crate(700, 200, 100, 100, True))
+        self.collidables.add(Crate(100, 200, 100, 100))
+        self.collidables.add(Crate(400, 200, 100, 100))
+        self.collidables.add(Crate(700, 200, 100, 100))
 
         self.fatal = pygame.sprite.Group()
-        self.fatal.add(Lava(0, 540, 960, 100, True))
+        self.fatal.add(Lava(0, 540, 960, 100))
     
     def process_events(self):
         # process keyboard events
@@ -167,11 +173,13 @@ class Game:
             self.collidables.draw(self.screen)
             self.fatal.draw(self.screen)
             
-            coordinate_txt = arial.render(f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
-            self.screen.blit(coordinate_txt, (10, 10))
+            coordinates = arial.render(f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
+            onground = arial.render(f"onGround: {self.player.on_ground}", False, (0, 0, 0))
+            crouching = arial.render(f"crouching: {self.player.crouching}", False, (0, 0, 0))
             
-            coordinate_txt = arial.render(f"onground: {self.player.on_ground(self.collidables)}", False, (0, 0, 0))
-            self.screen.blit(coordinate_txt, (10, 25))
+            self.screen.blit(coordinates, (10, 10))
+            self.screen.blit(onground, (10, 25))
+            self.screen.blit(crouching, (10, 40))
 
             pygame.display.flip()
             
