@@ -14,6 +14,7 @@ except ImportError:
         os.system("python3 -m pip install pygame")
 
 pygame.init()
+pygame.font.init()
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image, x, y, width = 100, height = 100, show_hitbox = False):
@@ -98,14 +99,17 @@ class Player(Entity):
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.x_speed = self.max_x_speed
         
+        if not on_ground:
+            if self.y_speed < 15:
+                self.y_speed += self.gravity * 0.06
+        else:
+            self.y_speed = 0
+
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and on_ground:
             self.y_speed = -self.jump_power * 10
         
         if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and on_ground:
             self.x_speed *= 0.6
-        
-        if not on_ground and self.y_speed < 15:
-            self.y_speed += self.gravity * 0.06
         
         self.move(self.x_speed, self.y_speed, collidables)
         self.x_speed = 0
@@ -162,10 +166,17 @@ class Game:
             self.collidables.draw(self.screen)
             self.fatal.draw(self.screen)
             
+            coordinate_txt = arial.render(f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
+            self.screen.blit(coordinate_txt, (10, 10))
+            
+            coordinate_txt = arial.render(f"onground: {self.player.on_ground(self.collidables)}", False, (0, 0, 0))
+            self.screen.blit(coordinate_txt, (10, 25))
+
             pygame.display.flip()
             
             self.clock.tick(self.framecap)
 
 if __name__ == "__main__":
     h = Game(fps=56)
+    arial = pygame.font.SysFont("Arial", 12)
     h.loop()
