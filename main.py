@@ -19,6 +19,8 @@ except ImportError:
 pygame.init()
 pygame.font.init()
 
+NONE = pygame.image.load("assets/none.png")
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image = "assets/none.png", x = 0, y = 0, width = 100, height = 100, show_hitbox = False):
         super().__init__()
@@ -148,7 +150,7 @@ class Objective(Entity):
 
 class Game:
     def __init__(self, fps) -> None:
-        self.screen = pygame.display.set_mode((960, 640))
+        self.screen = pygame.display.set_mode((900, 600))
         pygame.display.set_caption("can pooper's adventures")
         self.clock = pygame.time.Clock()
         self.stopped = False
@@ -177,11 +179,15 @@ class Game:
     def loop(self):
         while not self.stopped:
             self.process_events()
-
             pygame.event.pump()
             
             self.screen.fill((255, 255, 255))
             
+            for i in range(0, 900, 100):
+                for j in range(0, 1800, 100):
+                    rect = pygame.Rect(i, j, 100, 100)
+                    pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
+
             if self.player.has_reached_objective(self.objectives):
                 message = large_text.render("congratulations you won", False, (0, 0, 0))
                 self.screen.blit(message, (10, 200))
