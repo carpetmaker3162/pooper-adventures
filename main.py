@@ -5,17 +5,14 @@ import numpy as np
 try:
     import pygame
 except ImportError:
-    try:
-        print("Forcibly installing PyGame on your computer wtihout your consent...")
-        if os.name == "nt":
-            os.system("py3 -m pip install pygame")
-            os.system("echo 🤡 imagine being on windows")
-        else:
-            os.system("python3 -m pip install pygame")
-        
-        import pygame
-    except KeyboardInterrupt:
-        pass
+    print("Forcibly installing PyGame on your computer wtihout your consent...")
+    if os.name == "nt":
+        os.system("py3 -m pip install pygame")
+        os.system("echo 🤡 imagine being on windows")
+    else:
+        os.system("python3 -m pip install pygame")
+    
+    import pygame
 
 pygame.init()
 pygame.font.init()
