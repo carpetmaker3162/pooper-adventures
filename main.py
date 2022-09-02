@@ -72,7 +72,7 @@ class Player(Entity):
         self.y_speed = 0
         self.max_x_speed = 5
         self.x_acceleration = 0.2
-        self.gravity = 1
+        self.gravity = 0.8
         self.facing_right = True
 
         self.respawn_x = x
@@ -120,7 +120,7 @@ class Player(Entity):
         return pygame.sprite.spritecollideany(self, objectives) is not None
     
     def update(self, collidables, fatal):
-        if pygame.sprite.spritecollideany(self, fatal):
+        if pygame.sprite.spritecollideany(self, fatal) or self.y > 2000:
             self.die(0)
 
         keys = pygame.key.get_pressed()
@@ -172,7 +172,7 @@ class Player(Entity):
         else:
             self.image = self.left_image
 
-        self.move(round(self.x_speed), self.y_speed, collidables)
+        self.move(round(self.x_speed), round(self.y_speed), collidables)
     
     def die(self, timeout):
         pygame.time.wait(timeout)
