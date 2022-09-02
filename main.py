@@ -21,6 +21,15 @@ pygame.font.init()
 
 NONE = pygame.image.load("assets/none.png")
 
+def decrease(number, by):
+    if abs(number) == number:
+        return number - by
+    else:
+        return number + by
+
+def increase(number, by):
+    return decrease(number, -by)
+
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image = "assets/none.png", x = 0, y = 0, width = 100, height = 100, show_hitbox = False):
         super().__init__()
@@ -101,6 +110,8 @@ class Player(Entity):
             self.die(0)
 
         keys = pygame.key.get_pressed()
+        no_keys_pressed = not any(keys)
+        
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
         
@@ -116,13 +127,13 @@ class Player(Entity):
         else:
             self.y_speed = 0
 
-        if (keys[pygame.K_UP] or keys[pygame.K_w]) and not self.crouching and self.on_ground:
+        if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and not self.crouching and self.on_ground:
             self.y_speed = -self.jump_power * 10
         
         self.crouching = False
 
         if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.on_ground:
-            self.x_speed *= 0.6
+            self.x_speed *= 0.4
             self.crouching = True
         
         self.move(self.x_speed, self.y_speed, collidables)
@@ -170,7 +181,7 @@ class Game:
         self.fatal.add(Lava(0, 540, 960, 100))
 
         self.objectives = pygame.sprite.Group()
-        self.objectives.add(Objective(750, 450, 50, 50))
+        self.objectives.add(Objective(800, 450, 50, 50))
     
     def process_events(self):
         # process keyboard events
