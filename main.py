@@ -200,7 +200,7 @@ class Game:
         self.fatal.add(Lava(0, 540, 960, 100))
 
         self.objectives = pygame.sprite.Group()
-        self.objectives.add(Objective(800, 450, 50, 50))
+        self.objectives.add(Objective(800, 450, 100, 100))
     
     def process_events(self):
         # process keyboard events
