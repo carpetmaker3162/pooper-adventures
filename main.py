@@ -70,15 +70,17 @@ class Player(Entity):
 
         self.x_speed = 0
         self.y_speed = 0
-        self.max_x_speed = 5
-        self.x_acceleration = 0.2
-        self.gravity = 0.8
+        self.x_acceleration = 0.5
         self.facing_right = True
+        
+        self.max_x_speed = 5
+        self.gravity = 0.8
+        self.jump_power = 1.5
+        self.ground_x_acceleration = 0.5
+        self.air_x_acceleration = 0.2
 
         self.respawn_x = x
         self.respawn_y = y
-
-        self.jump_power = 1.5
 
         self.crouching = False
         self.on_ground = False
@@ -129,6 +131,17 @@ class Player(Entity):
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
         
+        if not self.on_ground:
+            self.x_acceleration = self.air_x_acceleration
+            if self.y_speed < 15:
+                self.y_speed += self.gravity
+        else:
+            self.y_speed = 0
+            self.x_acceleration = self.ground_x_acceleration
+        
+        if hitting_ceiling:
+            self.y_speed = -self.y_speed * 0.6 # bounce
+
         if no_keys_pressed and self.facing_right:
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
@@ -151,12 +164,6 @@ class Player(Entity):
             self.x_speed += self.x_acceleration
             if self.x_speed > self.max_x_speed:
                 self.x_speed = self.max_x_speed # Reduce speed to max speed
-        
-        if not self.on_ground:
-            if self.y_speed < 15:
-                self.y_speed += self.gravity
-        else:
-            self.y_speed = 0
 
         if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and not self.crouching and self.on_ground:
             self.y_speed = -self.jump_power * 10
@@ -164,7 +171,7 @@ class Player(Entity):
         self.crouching = False
 
         if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.on_ground:
-            self.x_speed *= 0.4
+            self.x_speed *= 0.7
             self.crouching = True
         
         if self.facing_right:
