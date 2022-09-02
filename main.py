@@ -74,7 +74,8 @@ class Player(Entity):
         self.facing_right = True
         
         self.max_x_speed = 5
-        self.gravity = 0.8
+        self.gravity = 0.98
+        self.terminal_velocity = 20
         self.jump_power = 1.5
         self.ground_x_acceleration = 0.5
         self.air_x_acceleration = 0.2
@@ -133,7 +134,7 @@ class Player(Entity):
         
         if not self.on_ground:
             self.x_acceleration = self.air_x_acceleration
-            if self.y_speed < 15:
+            if self.y_speed < self.terminal_velocity:
                 self.y_speed += self.gravity
         else:
             self.y_speed = 0
@@ -179,6 +180,8 @@ class Player(Entity):
         else:
             self.image = self.left_image
 
+        # has to round because floatingpoint imprecision causes issues with pygames coordinate system or something.
+        # fix if a better way is found
         self.move(round(self.x_speed), round(self.y_speed), collidables)
     
     def die(self, timeout):
