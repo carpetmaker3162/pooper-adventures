@@ -1,20 +1,21 @@
 #!/usr/bin/env python3.10
 
 import os
-import time
 import numpy as np
 try:
     import pygame
 except ImportError:
-    print("Forcibly installing PyGame on your computer wtihout your consent...")
-    if os.name == "nt":
-        os.system("py3 -m pip install pygame")
-        os.system("echo 🤡 imagine being on windows")
-    else:
-        os.system("python3 -m pip install pygame")
-    
-    # Reimport pygame after it's been installed
-    import pygame
+    try:
+        print("Forcibly installing PyGame on your computer wtihout your consent...")
+        if os.name == "nt":
+            os.system("py3 -m pip install pygame")
+            os.system("echo 🤡 imagine being on windows")
+        else:
+            os.system("python3 -m pip install pygame")
+        
+        import pygame
+    except KeyboardInterrupt:
+        pass
 
 pygame.init()
 pygame.font.init()
