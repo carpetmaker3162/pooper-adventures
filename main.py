@@ -134,48 +134,60 @@ class Player(Entity):
         hitting_ceiling = self.hitting_ceiling(collidables)
         
         if not self.on_ground:
+            # when player is in the air
             self.x_acceleration = self.air_x_acceleration
             if self.y_speed < self.terminal_velocity:
                 self.y_speed += self.gravity
         else:
+            # when player is on the ground
             self.y_speed = 0
             self.x_acceleration = self.ground_x_acceleration
         
+
         if hitting_ceiling:
+            # when there is an entity directly above the player
             self.y_speed = -self.y_speed * 0.6 # bounce
 
+
         if no_keys_pressed and self.facing_right:
+            # de-accelerate to the right
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
                 self.x_speed = 0
         elif no_keys_pressed and not self.facing_right:
+            # de-accelerate to the left
             self.x_speed += self.x_acceleration
             if self.x_speed > 0:
                 self.x_speed = 0
 
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            # moving left
             self.facing_right = False
-            # self.x_speed = -self.max_x_speed
             self.x_speed -= self.x_acceleration
             if self.x_speed < -self.max_x_speed:
                 self.x_speed = -self.max_x_speed # Reduce speed to max speed
 
+
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            # moving right
             self.facing_right = True
-            # self.x_speed = self.max_x_speed
             self.x_speed += self.x_acceleration
             if self.x_speed > self.max_x_speed:
                 self.x_speed = self.max_x_speed # Reduce speed to max speed
 
         if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and not self.crouching and self.on_ground:
+            # jumping
             self.y_speed = -self.jump_power * 10
         
         self.crouching = False
 
         if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.on_ground:
+            # crouching
             self.x_speed *= 0.7
             self.crouching = True
         
+        # change player image
         if self.facing_right:
             self.image = self.right_image
         else:
