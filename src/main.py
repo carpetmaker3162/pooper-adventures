@@ -3,6 +3,7 @@
 import os
 import numpy as np
 import math
+import sys
 try:
     import pygame
 except ImportError:
@@ -59,6 +60,27 @@ class Entity(pygame.sprite.Sprite):
         image = pygame.image.load(path).convert_alpha()
         image = pygame.transform.scale(image, (width, height))
         return image
+    
+    def move(self, x, y, collidables):
+        dx = x
+        dy = y
+
+        while self.colliding_at(0, dy, collidables):
+            dy -= np.sign(dy)
+        while self.colliding_at(dx, dy, collidables):
+            dx -= np.sign(dx)
+
+        self.y += dy
+        self.x += dx
+
+        self.rect.move_ip((dx, dy))
+    
+    def colliding_at(self, x, y, entities):
+        # returns group of entities
+        self.rect.move_ip((x, y))
+        colliding = pygame.sprite.spritecollideany(self, entities)
+        self.rect.move_ip((-x, -y))
+        return colliding
 
 
 class Player(Entity):
@@ -73,6 +95,7 @@ class Player(Entity):
         self.respawn_x = x
         self.respawn_y = y
         self.x_acceleration = 0.5
+        self.last_bullet_fired = -sys.maxsize
 
         # stats you can mess around with
         self.max_x_speed = 5                # max x-velocity
@@ -81,32 +104,12 @@ class Player(Entity):
         self.air_x_acceleration = 0.2       # x-acceleration in the air
         self.gravity = 0.98                 # y-acceleration
         self.jump_power = 1.5               # how far up the player jumps initially
+        self.firing_cooldown = 330          # gun cooldown in ms
 
         # player states
         self.crouching = False
         self.on_ground = False
         self.facing_right = True
-
-    def move(self, x, y, collidables):
-        dx = x
-        dy = y
-
-        while self.colliding_at(0, dy, collidables):
-            dy -= np.sign(dy)
-        while self.colliding_at(dx, dy, collidables):
-            dx -= np.sign(dx)
-
-        self.y += dy
-        self.x += dx
-
-        self.rect.move_ip((dx, dy))
-
-    def colliding_at(self, x, y, entities):
-        # returns group of entities
-        self.rect.move_ip((x, y))
-        colliding = pygame.sprite.spritecollideany(self, entities)
-        self.rect.move_ip((-x, -y))
-        return colliding
 
     def is_on_ground(self, entities):
         for entity in entities:
@@ -123,7 +126,7 @@ class Player(Entity):
     def has_reached_objective(self, objectives):
         return pygame.sprite.spritecollideany(self, objectives) is not None
 
-    def update(self, collidables, fatal):
+    def update(self, collidables, fatal, bullets):
         if pygame.sprite.spritecollideany(self, fatal) or self.y > 2000:
             self.die(0)
 
@@ -172,7 +175,7 @@ class Player(Entity):
             if self.x_speed > self.max_x_speed:
                 self.x_speed = self.max_x_speed  # Reduce speed to max speed
 
-        if (keys[pygame.K_UP] or keys[pygame.K_w] or keys[pygame.K_SPACE]) and not self.crouching and self.on_ground:
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and not self.crouching and self.on_ground:
             # jumping
             self.y_speed = -self.jump_power * 10
 
@@ -218,20 +221,32 @@ class Objective(Entity):
 
 
 class Bullet(Entity):
-    def __init__(self, x, y, speed=10, direction=(1, 1), width=100, height=100, hitbox=False):
+    def __init__(self, x, y, speed=100, direction=0, hitbox=False, lifetime = 8000):
         """
-        (-1,-1) (0,-1) (1,-1)
-        (-1, 0)        (1, 0)
-        (-1, 1) (0, 1) (1, 1)
+        0 = left
+        1 = right
         """
-        super().__init__("assets/bullet.png", x, y, width, height, hitbox)
-        self.x_direction, self.y_direction = direction
-        self.x_speed = self.x_direction * speed
-        self.y_speed = self.y_direction * speed
+        super().__init__("assets/bullet.png", x, y, 15, 5, hitbox)
+        
+        if direction:
+            self.x_speed = speed
+        else:
+            self.x_speed = -speed
+        
+        self.lifetime = lifetime
+        self.life_begin = pygame.time.get_ticks()
+    
+    def update(self):
+        if pygame.time.get_ticks() - self.life_begin > self.lifetime:
+            self.kill()
 
+# also did you watch the vscode videos on discord? no because h hh h h h h h h h h hh h h h h h h hh hhhhh h h h
 class Game:
     def __init__(self, fps) -> None:
-        self.screen = pygame.display.set_mode((900, 600))
+        self.screen_width = 900
+        self.screen_height = 600
+
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("can pooper's adventures")
         self.clock = pygame.time.Clock()
         self.stopped = False
@@ -250,14 +265,26 @@ class Game:
         self.fatal = pygame.sprite.Group()
         self.fatal.add(Lava(0, 540, 960, 100))
 
+        self.bullets = pygame.sprite.Group()
+
         self.objectives = pygame.sprite.Group()
         self.objectives.add(Objective(800, 450, 100, 100))
 
     def process_events(self):
         # process keyboard events
+        keys = pygame.key.get_pressed()
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.stopped = True
+        
+        if keys[pygame.K_SPACE]:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
+                self.bullets.add(Bullet(self.player.x, self.player.y, 15, self.player.facing_right, False, 3000))
+                self.player.last_bullet_fired = current_time
+            else:
+                return
 
     def loop(self):
         while not self.stopped:
@@ -278,13 +305,22 @@ class Game:
                 self.screen.blit(message, (10, 200))
                 pygame.display.flip()
                 self.player.die(1000)
+            
+            for bullet in self.bullets:
+                if (bullet.x > self.screen_width + 100 or bullet.x < -100) or bullet.y > (self.screen_height + 100 or bullet.y < -100):
+                    bullet.kill()
+                bullet.move(bullet.x_speed, bullet.y_speed, self.collidables)
+                bullet.update()
 
-            self.player.update(self.collidables, self.fatal)
+            self.player.update(self.collidables, self.fatal, self.bullets)
 
             self.player.draw(self.screen)
             self.collidables.draw(self.screen)
             self.fatal.draw(self.screen)
             self.objectives.draw(self.screen)
+            self.bullets.draw(self.screen)
+            
+            self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
 
             coordinates = arial.render(
                 f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
@@ -294,11 +330,17 @@ class Game:
                 f"crouching: {self.player.crouching}", False, (0, 0, 0))
             direction = arial.render(
                 f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
+            fps = arial.render(
+                f"FPS: {round(self.clock.get_fps(), 1)}", False, (0, 0, 0))
+            entitycount = arial.render(
+                f"entityCount: {self.entitycount}", False, (0, 0, 0))
 
             self.screen.blit(coordinates, (10, 10))
             self.screen.blit(onground, (10, 25))
             self.screen.blit(crouching, (10, 40))
             self.screen.blit(direction, (10, 55))
+            self.screen.blit(fps, (10, 70))
+            self.screen.blit(entitycount, (10, 85))
 
             pygame.display.flip()
 

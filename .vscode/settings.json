@@ -1,4 +1,8 @@
 {
     "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 1
+    "files.autoSaveDelay": 1,
+    "files.exclude": {
+        "/LICENSE": true,
+        "/.gitignore": true
+    }
 }

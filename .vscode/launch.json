@@ -6,7 +6,8 @@
             "type": "python",
             "program": "src/main.py",
             "console": "internalConsole",
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
