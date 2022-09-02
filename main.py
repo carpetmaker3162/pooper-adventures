@@ -2,6 +2,7 @@
 
 import os
 import numpy as np
+import math
 try:
     import pygame
 except ImportError:
@@ -20,13 +21,16 @@ pygame.font.init()
 NONE = pygame.image.load("assets/none.png")
 
 def decrease(number, by):
-    if abs(number) == number:
+    if is_positive(number):
         return number - by
     else:
         return number + by
 
 def increase(number, by):
     return decrease(number, -by)
+
+def is_positive(number):
+    return abs(number) == number
 
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image = "assets/none.png", x = 0, y = 0, width = 100, height = 100, show_hitbox = False):
@@ -67,7 +71,7 @@ class Player(Entity):
         self.x_speed = 0
         self.y_speed = 0
         self.max_x_speed = 5
-        self.x_acceleration = 0.5
+        self.x_acceleration = 0.2
         self.gravity = 1
         self.facing_right = True
 
@@ -125,13 +129,28 @@ class Player(Entity):
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
         
+        if no_keys_pressed and self.facing_right:
+            self.x_speed -= self.x_acceleration
+            if self.x_speed < 0:
+                self.x_speed = 0
+        elif no_keys_pressed and not self.facing_right:
+            self.x_speed += self.x_acceleration
+            if self.x_speed > 0:
+                self.x_speed = 0
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.facing_right = False
-            self.x_speed = -self.max_x_speed
-        
+            # self.x_speed = -self.max_x_speed
+            self.x_speed -= self.x_acceleration
+            if self.x_speed < -self.max_x_speed:
+                self.x_speed = -self.max_x_speed # Reduce speed to max speed
+
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.facing_right = True
-            self.x_speed = self.max_x_speed
+            # self.x_speed = self.max_x_speed
+            self.x_speed += self.x_acceleration
+            if self.x_speed > self.max_x_speed:
+                self.x_speed = self.max_x_speed # Reduce speed to max speed
         
         if not self.on_ground:
             if self.y_speed < 15:
@@ -153,8 +172,7 @@ class Player(Entity):
         else:
             self.image = self.left_image
 
-        self.move(self.x_speed, self.y_speed, collidables)
-        self.x_speed = 0
+        self.move(round(self.x_speed), self.y_speed, collidables)
     
     def die(self, timeout):
         pygame.time.wait(timeout)
@@ -250,14 +268,3 @@ if __name__ == "__main__":
     arial = pygame.font.SysFont("Arial", 12)
     large_text = pygame.font.SysFont("Arial", 40)
     h.loop()
-
-"""
-50
-69.1831
-89.8968
-111.7841
-135.0282
-158.7998
-183.9250
-210.4039
-"""
