@@ -33,9 +33,8 @@ def increase(number, by):
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image = "assets/none.png", x = 0, y = 0, width = 100, height = 100, show_hitbox = False):
         super().__init__()
-
-        self.image = pygame.image.load(image).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (width, height))
+        
+        self.image = self.get_image(image, width, height)
         self.rect = self.image.get_rect()
         self.rect.center = [x + width/2, y + height/2]
 
@@ -52,14 +51,27 @@ class Entity(pygame.sprite.Sprite):
             pygame.draw.rect(screen, pygame.Color(255, 0, 0), self.rect, width = 5)
         center = np.array(self.rect.center) - (self.width/2, self.height/2)
         screen.blit(self.image, list(center))
+    
+    def get_image(self, path, width = 100, height = 100):
+        if isinstance(path, pygame.Surface):
+            return path
+        image = pygame.image.load(path).convert_alpha()
+        image = pygame.transform.scale(image, (width, height))
+        return image
 
 class Player(Entity):
     def __init__(self, x, y, width = 100, height = 200, hitbox = False):
-        super().__init__("assets/canpooper.png", x, y, width, height, hitbox)
+        super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox)
+
+        self.left_image = self.get_image("assets/canpooper_left.png", width, height)
+        self.right_image = self.get_image("assets/canpooper_right.png", width, height)
+
         self.x_speed = 0
         self.y_speed = 0
         self.max_x_speed = 5
+        self.x_acceleration = 0.5
         self.gravity = 1
+        self.facing_right = True
 
         self.respawn_x = x
         self.respawn_y = y
@@ -116,9 +128,11 @@ class Player(Entity):
         hitting_ceiling = self.hitting_ceiling(collidables)
         
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            self.facing_right = False
             self.x_speed = -self.max_x_speed
         
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            self.facing_right = True
             self.x_speed = self.max_x_speed
         
         if not self.on_ground:
@@ -136,6 +150,11 @@ class Player(Entity):
             self.x_speed *= 0.4
             self.crouching = True
         
+        if self.facing_right:
+            self.image = self.right_image
+        else:
+            self.image = self.left_image
+
         self.move(self.x_speed, self.y_speed, collidables)
         self.x_speed = 0
     
@@ -217,10 +236,12 @@ class Game:
             coordinates = arial.render(f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
             onground = arial.render(f"onGround: {self.player.on_ground}", False, (0, 0, 0))
             crouching = arial.render(f"crouching: {self.player.crouching}", False, (0, 0, 0))
+            direction = arial.render(f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
             
             self.screen.blit(coordinates, (10, 10))
             self.screen.blit(onground, (10, 25))
             self.screen.blit(crouching, (10, 40))
+            self.screen.blit(direction, (10, 55))
 
             pygame.display.flip()
             
