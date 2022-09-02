@@ -65,26 +65,27 @@ class Player(Entity):
     def __init__(self, x, y, width = 100, height = 200, hitbox = False):
         super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox)
 
+        # initing stuff
         self.left_image = self.get_image("assets/canpooper_left.png", width, height)
         self.right_image = self.get_image("assets/canpooper_right.png", width, height)
-
+        self.respawn_x = x
+        self.respawn_y = y
         self.x_speed = 0
         self.y_speed = 0
         self.x_acceleration = 0.5
-        self.facing_right = True
         
-        self.max_x_speed = 5
-        self.gravity = 0.98
-        self.terminal_velocity = 20
-        self.jump_power = 1.5
-        self.ground_x_acceleration = 0.5
-        self.air_x_acceleration = 0.2
+        # stats you can mess around with
+        self.max_x_speed = 5                # max x-velocity
+        self.terminal_velocity = 20         # max y-velocity
+        self.ground_x_acceleration = 0.5    # x-acceleration on the ground
+        self.air_x_acceleration = 0.2       # x-acceleration in the air
+        self.gravity = 0.98                 # y-acceleration
+        self.jump_power = 1.5               # how far up the player jumps initially
 
-        self.respawn_x = x
-        self.respawn_y = y
-
+        # player states
         self.crouching = False
         self.on_ground = False
+        self.facing_right = True
     
     def move(self, x, y, collidables):
         dx = x
