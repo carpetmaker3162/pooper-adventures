@@ -4,7 +4,7 @@
             "name": "Pooper Adventures",
             "request": "launch",
             "type": "python",
-            "program": "src/main.py",
+            "program": "main.py",
             "console": "internalConsole",
             "cwd": "${workspaceFolder}",
             "internalConsoleOptions": "openOnSessionStart"
