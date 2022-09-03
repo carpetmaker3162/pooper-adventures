@@ -1,5 +1,15 @@
 #!/usr/bin/env python3.10
 
+"""
+To-do list:
+- Implement HP and HP bars
+- Add enemies
+- Try to add global score system (looking almost impossible right now)
+- Add a relative coordinate system
+- Add a level encoding/parsing system
+- Add music & SFX
+"""
+
 import os
 import numpy as np
 import math
@@ -46,7 +56,6 @@ class Entity(pygame.sprite.Sprite):
 
         self.hitbox = show_hitbox
 
-    # Maybe add flag so that the caller can choose to not render hitboxes?
     def draw(self, screen):
         if self.hitbox:
             pygame.draw.rect(screen, pygame.Color(
@@ -240,7 +249,6 @@ class Bullet(Entity):
         if pygame.time.get_ticks() - self.life_begin > self.lifetime:
             self.kill()
 
-# also did you watch the vscode videos on discord? no because h hh h h h h h h h h hh h h h h h h hh hhhhh h h h
 class Game:
     def __init__(self, fps) -> None:
         self.screen_width = 900
@@ -321,7 +329,6 @@ class Game:
             self.bullets.draw(self.screen)
             
             self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
-
             coordinates = arial.render(
                 f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
             onground = arial.render(
