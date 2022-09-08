@@ -12,7 +12,7 @@ will (hopefully) be my first big project
 
 ## To-do list:
 - [x] Implement HP and HP bars
-- [ ] Add enemies
+- [x] Add enemies
 - [ ] Try to add global score system (looking almost impossible right now)
 - [ ] Add a relative coordinate system
 - [ ] Add a level encoding/parsing system
