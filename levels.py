@@ -6,12 +6,12 @@ class Level:
     # TODO: Maybe add some more parameters
     # Override this method.
     # Also you know you can return a level from update to change the level.
-    def update():
+    def update(self):
         pass
     
     # TODO: Maybe add some more parameters
     # Override this method as well.
-    def render():
+    def render(self):
         pass
 
 class LevelManager:
