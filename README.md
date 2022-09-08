@@ -11,7 +11,7 @@ will (hopefully) be my first big project
 - space to shoot
 
 ## To-do list:
-- [ ] Implement HP and HP bars
+- [x] Implement HP and HP bars
 - [ ] Add enemies
 - [ ] Try to add global score system (looking almost impossible right now)
 - [ ] Add a relative coordinate system
