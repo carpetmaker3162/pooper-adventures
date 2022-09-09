@@ -40,7 +40,6 @@ Team ID
 2 = enemy
 
 """
-
 class Entity(pygame.sprite.Sprite):
     def __init__(self, image="assets/none.png", x=0, y=0, width=100, height=100, show_hitbox=False, hp=sys.maxsize, hp_bar_size=None, team=0):
         super().__init__()
@@ -116,7 +115,8 @@ class Entity(pygame.sprite.Sprite):
             for bullet in pygame.sprite.spritecollide(self, bullets, False): # iterating through all the colliding bullets. if this causes lag use a different way
                 if bullet.team != self.team:
                     self.hp -= bullet.damage
-                    "got hit"
+                    bullet.kill()
+                    print("ouchy")
         if self.hp < 0 and not self.invulnerable:
             self.kill()
     
@@ -177,10 +177,10 @@ class Player(Entity):
         return pygame.sprite.spritecollideany(self, objectives) is not None
 
     def update(self, collidables, fatal, bullets, screen):
+        super().update(collidables, fatal, bullets, screen)
+        
         if (pygame.sprite.spritecollideany(self, fatal) or self.y > 2000 or self.hp <= 0) and not self.invulnerable:
             self.die()
-        
-        super().update(collidables, fatal, bullets, screen)
 
         keys = pygame.key.get_pressed()
         no_keys_pressed = not any(keys)
@@ -424,7 +424,7 @@ class Game:
         self.objectives.add(Objective(800, 450, 100, 100))
 
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 800, 200, 100, 100, False, 1, 2, 50, 25, 10, 3000, 800, 200, 800, 100, False, 1000))
+        self.enemies.add(Enemy("assets/canpooper_left.png", 850, 200, 50, 50, False, 1, 2, 50, 25, 10, 3000, 850, 200, 850, 100, False, 1000))
 
     def process_events(self):
         # process keyboard events
@@ -447,6 +447,8 @@ class Game:
         while not self.stopped:
             self.process_events()
             pygame.event.pump()
+
+            self.enemy_bullets = pygame.sprite.Group()
 
             self.screen.fill((255, 255, 255))
             
@@ -471,6 +473,8 @@ class Game:
             
             for enemy in self.enemies:
                 enemy.update(self.collidables, self.fatal, self.bullets, self.screen, self.clock.get_fps())
+                for bullet in enemy.bullets:
+                    self.bullets.add(bullet)
 
             self.player.update(self.collidables, self.fatal, self.bullets, self.screen)
 
