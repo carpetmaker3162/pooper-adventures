@@ -116,7 +116,6 @@ class Entity(pygame.sprite.Sprite):
                 if bullet.team != self.team:
                     self.hp -= bullet.damage
                     bullet.kill()
-                    print("ouchy")
         if self.hp < 0 and not self.invulnerable:
             self.kill()
     
@@ -311,7 +310,7 @@ class Bullet(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, image="assets/none.png", x=0, y=0, width=100, height=100, show_hitbox=False, type=0, team=2, hp=50, meleedamage=25, bulletdamage=10, cycle=3000, startx=100, starty=100, endx=200, endy=100, firing_right=False, firing_cooldown=1000):
+    def __init__(self, image="assets/none.png", width=100, height=100, show_hitbox=False, type=0, team=2, hp=50, meleedamage=25, bulletdamage=10, cycle=3000, startx=100, starty=100, endx=200, endy=100, firing_right=False, firing_cooldown=1000):
         """
         Arguments:
         type:           denotes the type of the enemy (see next section)
@@ -331,7 +330,7 @@ class Enemy(Entity):
         2: shoots in 2 directions
         """
         
-        super().__init__(image, x, y, width, height, show_hitbox, hp)
+        super().__init__(image, startx, starty, width, height, show_hitbox, hp)
         self.direction = 0 # 0 if going towards end, 1 if going towards start
         self.firing_right = firing_right
         self.firing_cooldown = firing_cooldown
@@ -354,14 +353,14 @@ class Enemy(Entity):
     def update(self, collidables, fatal, bullets, screen, fps):
         super().update(collidables, fatal, bullets, screen)
         try:
-            stepx, stepy = (self.dx / (fps * self.cycle / 1000), self.dy / (fps * self.cycle / 1000)) ## continue this later
+            stepx, stepy = self.dx / (fps * self.cycle / 1000), self.dy / (fps * self.cycle / 1000) ## continue this later
         except ZeroDivisionError:
-            # In the moments when the game is loading, the FPS is 0 which leads to division by zero
+            # In the moments when the game is loading, the FPS is 0 which leads to division by zero. this shouldnt cause any issues
             return
         
-        if self.x == self.endx and self.y == self.endy:
+        if self.rect.left == self.endx and self.rect.top == self.endy:
             self.direction = 1
-        elif self.x == self.startx and self.y == self.starty:
+        elif self.rect.left == self.startx and self.rect.top == self.starty:
             self.direction = 0
 
         if self.direction == 0:
@@ -424,7 +423,7 @@ class Game:
         self.objectives.add(Objective(800, 450, 100, 100))
 
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 850, 200, 50, 50, False, 1, 2, 50, 25, 10, 3000, 850, 200, 850, 100, False, 1000))
+        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 1000, 850, 250, 850, 0, False, 1000))
 
     def process_events(self):
         # process keyboard events
