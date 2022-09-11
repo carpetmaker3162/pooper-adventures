@@ -2,6 +2,7 @@
 sandbox.py
 assets/.DS_Store
 .vscode/.DS_Store
+logs.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

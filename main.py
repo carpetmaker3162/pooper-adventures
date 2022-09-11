@@ -13,6 +13,7 @@ To-do list:
 import os
 import sys
 import numpy as np
+from utilities import logs, decrease, increase, is_positive, get_image
 
 try:
     import pygame
@@ -29,22 +30,22 @@ except ImportError:
 pygame.init()
 pygame.font.init()
 
-NONE = pygame.image.load("assets/none.png")
-arial = pygame.font.SysFont("Arial", 12)
-large_text = pygame.font.SysFont("Arial", 40)
+NULLIMAGE = pygame.image.load("assets/none.png")
+ARIAL = pygame.font.SysFont("ARIAL", 12)
+LARGE_TEXT = pygame.font.SysFont("ARIAL", 40)
 
 """
 Team ID
 0 = objects
 1 = player
 2 = enemy
-
 """
+
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, image="assets/none.png", x=0, y=0, width=100, height=100, show_hitbox=False, hp=sys.maxsize, hp_bar_size=None, team=0):
+    def __init__(self, image=NULLIMAGE, x=0, y=0, width=100, height=100, show_hitbox=False, hp=sys.maxsize, hp_bar_size=None, team=0):
         super().__init__()
 
-        self.image = self.get_image(image, width, height)
+        self.image = get_image(image, width, height)
         self.rect = self.image.get_rect()
         self.rect.center = [x + width/2, y + height/2]
         self.team = team
@@ -79,13 +80,6 @@ class Entity(pygame.sprite.Sprite):
                 255, 0, 0), self.rect, width=5)
         center = np.array(self.rect.center) - (self.width/2, self.height/2)
         screen.blit(self.image, list(center))
-
-    def get_image(self, path, width=100, height=100):
-        if isinstance(path, pygame.Surface):
-            return path
-        image = pygame.image.load(path).convert_alpha()
-        image = pygame.transform.scale(image, (width, height))
-        return image
     
     def move(self, x, y, collidables):
         dx = x
@@ -133,9 +127,9 @@ class Player(Entity):
         super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox, hp, None, 1)
 
         # initing stuff
-        self.left_image = self.get_image(
+        self.left_image = get_image(
             "assets/canpooper_left.png", width, height)
-        self.right_image = self.get_image(
+        self.right_image = get_image(
             "assets/canpooper_right.png", width, height)
         self.respawn_x = x
         self.respawn_y = y
@@ -458,7 +452,7 @@ class Game:
                     pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
 
             if self.player.has_reached_objective(self.objectives):
-                message = large_text.render(
+                message = LARGE_TEXT.render(
                     "congratulations you won", False, (0, 0, 0))
                 self.screen.blit(message, (10, 200))
                 pygame.display.flip()
@@ -485,19 +479,19 @@ class Game:
             self.enemies.draw(self.screen)
             
             self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
-            coordinates = arial.render(
+            coordinates = ARIAL.render(
                 f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
-            onground = arial.render(
+            onground = ARIAL.render(
                 f"onGround: {self.player.on_ground}", False, (0, 0, 0))
-            crouching = arial.render(
+            crouching = ARIAL.render(
                 f"crouching: {self.player.crouching}", False, (0, 0, 0))
-            direction = arial.render(
+            direction = ARIAL.render(
                 f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
-            fps = arial.render(
+            fps = ARIAL.render(
                 f"FPS: {round(self.clock.get_fps(), 1)}", False, (0, 0, 0))
-            entitycount = arial.render(
+            entitycount = ARIAL.render(
                 f"entityCount: {self.entitycount}", False, (0, 0, 0))
-            deaths = arial.render(
+            deaths = ARIAL.render(
                 f"deathCount: {self.player.death_count}", False, (0, 0, 0))
 
             self.screen.blit(coordinates, (10, 10))
