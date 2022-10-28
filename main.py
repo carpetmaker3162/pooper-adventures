@@ -13,7 +13,7 @@ To-do list:
 import os
 import sys
 import numpy as np
-from utilities import logs, decrease, increase, is_positive, get_image
+from utilities import get_image
 
 try:
     import pygame
@@ -21,7 +21,7 @@ except ImportError:
     print("Forcibly installing PyGame on your computer wtihout your consent...")
     if os.name == "nt":
         os.system("py3 -m pip install pygame")
-        os.system("echo 🤡 imagine being on windows")
+        print("🤡 imagine being on windows")
     else:
         os.system("python3 -m pip install pygame")
 
