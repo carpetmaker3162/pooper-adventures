@@ -124,13 +124,13 @@ class Entity(pygame.sprite.Sprite):
 
 class Player(Entity):
     def __init__(self, x, y, width=100, height=200, hitbox=False, hp=100):
-        super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox, hp, None, 1)
+        super().__init__("assets/jin.png", x, y, width, height, hitbox, hp, None, 1)
 
         # initing stuff
         self.left_image = get_image(
-            "assets/canpooper_left.png", width, height)
+            "assets/jin.png", width, height)
         self.right_image = get_image(
-            "assets/canpooper_right.png", width, height)
+            "assets/jin.png", width, height)
         self.respawn_x = x
         self.respawn_y = y
         self.x_acceleration = 0.5
@@ -274,7 +274,7 @@ class Lava(Entity):
 
 class Objective(Entity):
     def __init__(self, x, y, width=100, height=100, hitbox=False):
-        super().__init__("assets/burger.png", x, y, width, height, hitbox, sys.maxsize, 0)
+        super().__init__("assets/burger2.png", x, y, width, height, hitbox, sys.maxsize, 0)
 
 
 class Bullet(Entity):
@@ -304,7 +304,23 @@ class Bullet(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, image="assets/none.png", width=100, height=100, show_hitbox=False, type=0, team=2, hp=50, meleedamage=25, bulletdamage=10, cycle=3000, startx=100, starty=100, endx=200, endy=100, firing_right=False, firing_cooldown=1000):
+    def __init__(self, 
+            image="assets/none.png", 
+            width=100, 
+            height=100, 
+            show_hitbox=False, 
+            type=0, 
+            team=2, 
+            hp=50, 
+            meleedamage=25, 
+            bulletdamage=10, 
+            cycle=3000, 
+            startx=100, 
+            starty=100, 
+            endx=200, 
+            endy=100, 
+            firing_right=False, 
+            firing_cooldown=1000):
         """
         Arguments:
         type:           denotes the type of the enemy (see next section)
@@ -342,8 +358,12 @@ class Enemy(Entity):
 
         self.bullets = pygame.sprite.Group()
         self.last_bullet_fired = -sys.maxsize
-        
+
+        # pygame.time.set_timer(self.toggle_direction, self.cycle)
     
+    def toggle_direction(self):
+        self.direction = 1 - self.direction
+
     def update(self, collidables, fatal, bullets, screen, fps):
         super().update(collidables, fatal, bullets, screen)
         try:
@@ -352,10 +372,10 @@ class Enemy(Entity):
             # In the moments when the game is loading, the FPS is 0 which leads to division by zero. this shouldnt cause any issues
             return
         
-        if self.rect.left == self.endx and self.rect.top == self.endy:
-            self.direction = 1
-        elif self.rect.left == self.startx and self.rect.top == self.starty:
-            self.direction = 0
+        #if self.rect.left == self.endx and self.rect.top == self.endy:
+        #    self.direction = 1
+        #elif self.rect.left == self.startx and self.rect.top == self.starty:
+        #    self.direction = 0
 
         if self.direction == 0:
             self.rect.move_ip((round(stepx), round(stepy)))
@@ -371,12 +391,12 @@ class Enemy(Entity):
             pass
         elif self.type == 1:
             if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, self.bulletdamage))
                 self.last_bullet_fired = current_time
         elif self.type == 2:
             if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(not self.firing_right), False, 3000, 10))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, self.bulletdamage))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(not self.firing_right), False, 3000, self.bulletdamage))
                 self.last_bullet_fired = current_time
         
         for bullet in self.bullets:
@@ -392,7 +412,7 @@ class Game:
         self.screen_height = 600
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("can pooper's adventures")
+        pygame.display.set_caption("Jin's adventures")
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
@@ -417,7 +437,7 @@ class Game:
         self.objectives.add(Objective(800, 450, 100, 100))
 
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 1000, 850, 250, 850, 0, False, 1000))
+        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 1000, 5000, 850, 50, 850, 50, False, 900))
 
     def process_events(self):
         # process keyboard events
