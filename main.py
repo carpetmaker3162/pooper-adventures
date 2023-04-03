@@ -176,7 +176,7 @@ class Player(Entity):
             self.die()
 
         keys = pygame.key.get_pressed()
-        no_keys_pressed = not any(keys)
+        # no_keys_pressed = not any(list(keys))
 
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
@@ -198,12 +198,12 @@ class Player(Entity):
             self.y_speed = -self.y_speed * 0.6  # bounce
 
 
-        if no_keys_pressed and self.facing_right:
+        if self.facing_right:
             # de-accelerate to the right
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
                 self.x_speed = 0
-        elif no_keys_pressed and not self.facing_right:
+        elif not self.facing_right:
             # de-accelerate to the left
             self.x_speed += self.x_acceleration
             if self.x_speed > 0:
@@ -407,9 +407,9 @@ class Enemy(Entity):
 
 
 class Game:
-    def __init__(self, fps) -> None:
-        self.screen_width = 900
-        self.screen_height = 600
+    def __init__(self, fps, w, h) -> None:
+        self.screen_width = w
+        self.screen_height = h
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
         pygame.display.set_caption("Jin's adventures")
@@ -418,6 +418,7 @@ class Game:
         self.framecap = fps
         self.player = Player(100, 50, 50, 50, False, 100)
         self.entitycount = 1
+        self.draw_grid = False
 
         self.collidables = pygame.sprite.Group()
         self.collidables.add(Crate(100, 250, 100, 100, False))
@@ -455,6 +456,9 @@ class Game:
                 self.player.last_bullet_fired = current_time
             else:
                 return
+        
+        if keys[pygame.K_g]:
+            self.draw_grid = not self.draw_grid
 
     def loop(self):
         while not self.stopped:
@@ -466,10 +470,12 @@ class Game:
             self.screen.fill((255, 255, 255))
             
             # draw grid
-            for i in range(0, 900, 100):
-                for j in range(0, 1800, 100):
-                    rect = pygame.Rect(i, j, 100, 100)
-                    pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
+            
+            if self.draw_grid:
+                for i in range(0, 900, 50):
+                    for j in range(0, 1800, 50):
+                        rect = pygame.Rect(i, j, 50, 50)
+                        pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
 
             if self.player.has_reached_objective(self.objectives):
                 message = LARGE_TEXT.render(
@@ -513,6 +519,8 @@ class Game:
                 f"entityCount: {self.entitycount}", False, (0, 0, 0))
             deaths = ARIAL.render(
                 f"deathCount: {self.player.death_count}", False, (0, 0, 0))
+            show_grid = ARIAL.render(
+                f"showGrid: {self.draw_grid}", False, (0, 0, 0))
 
             self.screen.blit(coordinates, (10, 10))
             self.screen.blit(onground, (10, 25))
@@ -521,6 +529,7 @@ class Game:
             self.screen.blit(fps, (10, 70))
             self.screen.blit(entitycount, (10, 85))
             self.screen.blit(deaths, (10, 100))
+            self.screen.blit(show_grid, (10, 115))
 
             pygame.display.flip()
 
@@ -528,5 +537,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    h = Game(fps=60)
+    h = Game(fps=60, w=900, h=600)
     h.loop()
