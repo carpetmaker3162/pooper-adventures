@@ -13,7 +13,7 @@ To-do list:
 import os
 import sys
 import numpy as np
-from utilities import get_image
+from utilities import logs, decrease, increase, is_positive, get_image
 
 try:
     import pygame
@@ -21,7 +21,7 @@ except ImportError:
     print("Forcibly installing PyGame on your computer wtihout your consent...")
     if os.name == "nt":
         os.system("py3 -m pip install pygame")
-        print("🤡 imagine being on windows")
+        os.system("echo 🤡 imagine being on windows")
     else:
         os.system("python3 -m pip install pygame")
 
@@ -124,13 +124,13 @@ class Entity(pygame.sprite.Sprite):
 
 class Player(Entity):
     def __init__(self, x, y, width=100, height=200, hitbox=False, hp=100):
-        super().__init__("assets/jin.png", x, y, width, height, hitbox, hp, None, 1)
+        super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox, hp, None, 1)
 
         # initing stuff
         self.left_image = get_image(
-            "assets/jin.png", width, height)
+            "assets/canpooper_left.png", width, height)
         self.right_image = get_image(
-            "assets/jin.png", width, height)
+            "assets/canpooper_right.png", width, height)
         self.respawn_x = x
         self.respawn_y = y
         self.x_acceleration = 0.5
@@ -176,7 +176,7 @@ class Player(Entity):
             self.die()
 
         keys = pygame.key.get_pressed()
-        # no_keys_pressed = not any(list(keys))
+        no_keys_pressed = not any(keys)
 
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
@@ -198,12 +198,12 @@ class Player(Entity):
             self.y_speed = -self.y_speed * 0.6  # bounce
 
 
-        if self.facing_right:
+        if no_keys_pressed and self.facing_right:
             # de-accelerate to the right
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
                 self.x_speed = 0
-        elif not self.facing_right:
+        elif no_keys_pressed and not self.facing_right:
             # de-accelerate to the left
             self.x_speed += self.x_acceleration
             if self.x_speed > 0:
@@ -274,7 +274,7 @@ class Lava(Entity):
 
 class Objective(Entity):
     def __init__(self, x, y, width=100, height=100, hitbox=False):
-        super().__init__("assets/burger2.png", x, y, width, height, hitbox, sys.maxsize, 0)
+        super().__init__("assets/burger.png", x, y, width, height, hitbox, sys.maxsize, 0)
 
 
 class Bullet(Entity):
@@ -304,23 +304,7 @@ class Bullet(Entity):
 
 
 class Enemy(Entity):
-    def __init__(self, 
-            image="assets/none.png", 
-            width=100, 
-            height=100, 
-            show_hitbox=False, 
-            type=0, 
-            team=2, 
-            hp=50, 
-            meleedamage=25, 
-            bulletdamage=10, 
-            cycle=3000, 
-            startx=100, 
-            starty=100, 
-            endx=200, 
-            endy=100, 
-            firing_right=False, 
-            firing_cooldown=1000):
+    def __init__(self, image="assets/none.png", width=100, height=100, show_hitbox=False, type=0, team=2, hp=50, meleedamage=25, bulletdamage=10, cycle=3000, startx=100, starty=100, endx=200, endy=100, firing_right=False, firing_cooldown=1000):
         """
         Arguments:
         type:           denotes the type of the enemy (see next section)
@@ -358,12 +342,8 @@ class Enemy(Entity):
 
         self.bullets = pygame.sprite.Group()
         self.last_bullet_fired = -sys.maxsize
-
-        # pygame.time.set_timer(self.toggle_direction, self.cycle)
+        
     
-    def toggle_direction(self):
-        self.direction = 1 - self.direction
-
     def update(self, collidables, fatal, bullets, screen, fps):
         super().update(collidables, fatal, bullets, screen)
         try:
@@ -372,10 +352,10 @@ class Enemy(Entity):
             # In the moments when the game is loading, the FPS is 0 which leads to division by zero. this shouldnt cause any issues
             return
         
-        #if self.rect.left == self.endx and self.rect.top == self.endy:
-        #    self.direction = 1
-        #elif self.rect.left == self.startx and self.rect.top == self.starty:
-        #    self.direction = 0
+        if self.rect.left == self.endx and self.rect.top == self.endy:
+            self.direction = 1
+        elif self.rect.left == self.startx and self.rect.top == self.starty:
+            self.direction = 0
 
         if self.direction == 0:
             self.rect.move_ip((round(stepx), round(stepy)))
@@ -391,12 +371,12 @@ class Enemy(Entity):
             pass
         elif self.type == 1:
             if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, self.bulletdamage))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
                 self.last_bullet_fired = current_time
         elif self.type == 2:
             if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, self.bulletdamage))
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(not self.firing_right), False, 3000, self.bulletdamage))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
+                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(not self.firing_right), False, 3000, 10))
                 self.last_bullet_fired = current_time
         
         for bullet in self.bullets:
@@ -407,18 +387,17 @@ class Enemy(Entity):
 
 
 class Game:
-    def __init__(self, fps, w, h) -> None:
-        self.screen_width = w
-        self.screen_height = h
+    def __init__(self, fps) -> None:
+        self.screen_width = 900
+        self.screen_height = 600
 
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("Jin's adventures")
+        pygame.display.set_caption("can pooper's adventures")
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
         self.player = Player(100, 50, 50, 50, False, 100)
         self.entitycount = 1
-        self.draw_grid = False
 
         self.collidables = pygame.sprite.Group()
         self.collidables.add(Crate(100, 250, 100, 100, False))
@@ -438,7 +417,7 @@ class Game:
         self.objectives.add(Objective(800, 450, 100, 100))
 
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 1000, 5000, 850, 50, 850, 50, False, 900))
+        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 1000, 850, 250, 850, 0, False, 1000))
 
     def process_events(self):
         # process keyboard events
@@ -456,9 +435,6 @@ class Game:
                 self.player.last_bullet_fired = current_time
             else:
                 return
-        
-        if keys[pygame.K_g]:
-            self.draw_grid = not self.draw_grid
 
     def loop(self):
         while not self.stopped:
@@ -470,12 +446,10 @@ class Game:
             self.screen.fill((255, 255, 255))
             
             # draw grid
-            
-            if self.draw_grid:
-                for i in range(0, 900, 50):
-                    for j in range(0, 1800, 50):
-                        rect = pygame.Rect(i, j, 50, 50)
-                        pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
+            for i in range(0, 900, 100):
+                for j in range(0, 1800, 100):
+                    rect = pygame.Rect(i, j, 100, 100)
+                    pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
 
             if self.player.has_reached_objective(self.objectives):
                 message = LARGE_TEXT.render(
@@ -519,8 +493,6 @@ class Game:
                 f"entityCount: {self.entitycount}", False, (0, 0, 0))
             deaths = ARIAL.render(
                 f"deathCount: {self.player.death_count}", False, (0, 0, 0))
-            show_grid = ARIAL.render(
-                f"showGrid: {self.draw_grid}", False, (0, 0, 0))
 
             self.screen.blit(coordinates, (10, 10))
             self.screen.blit(onground, (10, 25))
@@ -529,7 +501,6 @@ class Game:
             self.screen.blit(fps, (10, 70))
             self.screen.blit(entitycount, (10, 85))
             self.screen.blit(deaths, (10, 100))
-            self.screen.blit(show_grid, (10, 115))
 
             pygame.display.flip()
 
@@ -537,5 +508,5 @@ class Game:
 
 
 if __name__ == "__main__":
-    h = Game(fps=60, w=900, h=600)
+    h = Game(fps=60)
     h.loop()
