@@ -1,31 +1,7 @@
-#!/usr/bin/env python3.10
-
-"""
-To-do list:
-- Implement HP and HP bars
-- Add enemies
-- Try to add global score system (looking almost impossible right now)
-- Add a relative coordinate system
-- Add a level encoding/parsing system
-- Add music & SFX
-"""
-
 import os
 import sys
-import numpy as np
-from utilities import logs, decrease, increase, is_positive, get_image
-
-try:
-    import pygame
-except ImportError:
-    print("Forcibly installing PyGame on your computer wtihout your consent...")
-    if os.name == "nt":
-        os.system("py3 -m pip install pygame")
-        os.system("echo 🤡 imagine being on windows")
-    else:
-        os.system("python3 -m pip install pygame")
-
-    import pygame
+from utils import logs, decrease, increase, is_positive, get_image, sign
+import pygame
 
 pygame.init()
 pygame.font.init()
@@ -34,20 +10,30 @@ NULLIMAGE = pygame.image.load("assets/none.png")
 ARIAL = pygame.font.SysFont("ARIAL", 12)
 LARGE_TEXT = pygame.font.SysFont("ARIAL", 40)
 
-"""
-Team ID
-0 = objects
-1 = player
-2 = enemy
-"""
-
 class Entity(pygame.sprite.Sprite):
-    def __init__(self, image=NULLIMAGE, x=0, y=0, width=100, height=100, show_hitbox=False, hp=sys.maxsize, hp_bar_size=None, team=0):
+    """
+    Team ID
+    0 = objects
+    1 = player
+    2 = enemy
+    """
+    def __init__(
+            self, 
+            image=NULLIMAGE,
+            x=0,
+            y=0,
+            width=100,
+            height=100,
+            show_hitbox=False,
+            hp=sys.maxsize,
+            hp_bar_size=None,
+            team=0):
+
         super().__init__()
 
         self.image = get_image(image, width, height)
         self.rect = self.image.get_rect()
-        self.rect.center = [x + width/2, y + height/2]
+        self.rect.center = (x + width/2, y + height/2)
         self.team = team
         
         if not hp_bar_size:
@@ -78,17 +64,16 @@ class Entity(pygame.sprite.Sprite):
         if self.hitbox:
             pygame.draw.rect(screen, pygame.Color(
                 255, 0, 0), self.rect, width=5)
-        center = np.array(self.rect.center) - (self.width/2, self.height/2)
-        screen.blit(self.image, list(center))
+        screen.blit(self.image, (self.rect.center[0] - self.width/2, self.rect.center[1] - self.height/2))
     
     def move(self, x, y, collidables):
         dx = x
         dy = y
 
         while self.colliding_at(0, dy, collidables):
-            dy -= np.sign(dy)
+            dy -= sign(dy)
         while self.colliding_at(dx, dy, collidables):
-            dx -= np.sign(dx)
+            dx -= sign(dx)
 
         self.y += dy
         self.x += dx
@@ -106,7 +91,7 @@ class Entity(pygame.sprite.Sprite):
         if self.hp != self.max_hp and not self.invulnerable:
             self.draw_hp_bar(screen)
         if not self.invulnerable:
-            for bullet in pygame.sprite.spritecollide(self, bullets, False): # iterating through all the colliding bullets. if this causes lag use a different way
+            for bullet in pygame.sprite.spritecollide(self, bullets, False):
                 if bullet.team != self.team:
                     self.hp -= bullet.damage
                     bullet.kill()
@@ -123,7 +108,15 @@ class Entity(pygame.sprite.Sprite):
 
 
 class Player(Entity):
-    def __init__(self, x, y, width=100, height=200, hitbox=False, hp=100):
+    def __init__(
+            self,
+            x,
+            y,
+            width=100,
+            height=200,
+            hitbox=False,
+            hp=100):
+
         super().__init__("assets/canpooper_left.png", x, y, width, height, hitbox, hp, None, 1)
 
         # initing stuff
@@ -155,14 +148,26 @@ class Player(Entity):
         self.hp = self.max_hp
 
     def is_on_ground(self, entities):
+        p = self.rect
         for entity in entities:
-            if (entity.rect.top == self.rect.bottom) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right or (self.rect.left <= entity.rect.left and self.rect.right >= entity.rect.right)):
+            e = entity.rect
+            if (e.top == p.bottom and 
+                    (e.left <= p.left <= e.right or 
+                    e.left <= p.right <= e.right or 
+                    p.left <= e.left and 
+                    p.right >= e.right)):
                 return True
         return False
 
     def hitting_ceiling(self, entities):
+        p = self.rect
         for entity in entities:
-            if (entity.rect.bottom == self.rect.top) and (entity.rect.left <= self.rect.left <= entity.rect.right or entity.rect.left <= self.rect.right <= entity.rect.right or (self.rect.left <= entity.rect.left and self.rect.right >= entity.rect.right)):
+            e = entity.rect
+            if (e.bottom == p.top and 
+                    (e.left <= p.left <= e.right or 
+                    e.left <= p.right <= e.right or 
+                    p.left <= e.left and 
+                    p.right >= e.right)):
                 return True
         return False
 
@@ -176,14 +181,13 @@ class Player(Entity):
             self.die()
 
         keys = pygame.key.get_pressed()
-        no_keys_pressed = not any(keys)
+        no_keys_pressed = not (keys[pygame.K_a] or keys[pygame.K_d])
 
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
 
-
+        # change or apply acceleration depending on whether player is on the ground
         if not self.on_ground:
-            # when player is in the air
             self.x_acceleration = self.air_x_acceleration
             if self.y_speed < self.terminal_velocity:
                 self.y_speed += self.gravity
@@ -192,19 +196,17 @@ class Player(Entity):
             self.y_speed = 0
             self.x_acceleration = self.ground_x_acceleration
 
-
+        # bounce back if player hits the ceilint
         if hitting_ceiling:
-            # when there is an entity directly above the player
             self.y_speed = -self.y_speed * 0.6  # bounce
 
-
+        
+        # de-acceleration
         if no_keys_pressed and self.facing_right:
-            # de-accelerate to the right
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
                 self.x_speed = 0
         elif no_keys_pressed and not self.facing_right:
-            # de-accelerate to the left
             self.x_speed += self.x_acceleration
             if self.x_speed > 0:
                 self.x_speed = 0
@@ -278,8 +280,24 @@ class Objective(Entity):
 
 
 class Bullet(Entity):
-    def __init__(self, x, y, team=0, speed=100, direction=0, hitbox=False, lifetime = 8000, damage = 10, screen_width=900, screen_height=600):
+    def __init__(
+            self, 
+            x,
+            y,
+            team=0,
+            speed=100,
+            direction=0,
+            hitbox=False,
+            lifetime=8000,
+            damage=10,
+            screen_width=900,
+            screen_height=600):
+
         """
+        Arguments:
+        x:              start x
+        y:              start y
+        Directions:
         0 = left
         1 = right
         """
@@ -302,82 +320,57 @@ class Bullet(Entity):
             or (self.x > self.screen_width + 100 or self.x < -100) or self.y > (self.screen_height + 100 or self.y < -100):
             self.kill()
 
-
 class Enemy(Entity):
-    def __init__(self, image="assets/none.png", width=100, height=100, show_hitbox=False, type=0, team=2, hp=50, meleedamage=25, bulletdamage=10, cycle=3000, startx=100, starty=100, endx=200, endy=100, firing_right=False, firing_cooldown=1000):
+    def __init__(
+            self,
+            image="assets/none.png",
+            width=100,
+            height=100,
+            show_hitbox=False,
+            type=0,
+            team=2,
+            hp=50,
+            meleedamage=25,
+            bulletdamage=10,
+            startx=0,
+            starty=0,
+            firing_right=False,
+            firing_cooldown=1000):
+
         """
         Arguments:
+        image:          path of image
+        width:          width of sprite in px
+        height:         height of sprite in px
+        show_hitbox:    show hitbox or no
         type:           denotes the type of the enemy (see next section)
         team:           usually 2 (Enemy team)
         hp:             health points for entity
         meleedamage:    damage dealt when touching the hitbox of the enemy
         bulletdamage:   damage dealt by its bullets
-        cycle:          how long the Enemy takes to complete 1 walk from start coordinates to end coordinates (below) in ms
-        startx:         start x (Enemy will always complete cycle )
-        starty:         start y
-        endx:           end x
-        endy:           end y (if Enemy does not move just set all start and end values to the same)
-        
-        Types (denoted with `type` argument)
-        0: just moves around and tries to deal melee damage
-        1: shoots in 1 direction
-        2: shoots in 2 directions
         """
         
         super().__init__(image, startx, starty, width, height, show_hitbox, hp)
         self.direction = 0 # 0 if going towards end, 1 if going towards start
         self.firing_right = firing_right
         self.firing_cooldown = firing_cooldown
-        self.type = type
         self.team = team
         self.hp = hp
         self.meleedamage = meleedamage
         self.bulletdamage = bulletdamage
-        self.cycle = cycle
-        self.startx = startx
-        self.starty = starty
-        self.endx = endx
-        self.endy = endy
-        self.dx, self.dy = (endx - startx, endy - starty)
 
         self.bullets = pygame.sprite.Group()
         self.last_bullet_fired = -sys.maxsize
         
     
-    def update(self, collidables, fatal, bullets, screen, fps):
+    def update(self, collidables, fatal, bullets, screen):
         super().update(collidables, fatal, bullets, screen)
-        try:
-            stepx, stepy = self.dx / (fps * self.cycle / 1000), self.dy / (fps * self.cycle / 1000) ## continue this later
-        except ZeroDivisionError:
-            # In the moments when the game is loading, the FPS is 0 which leads to division by zero. this shouldnt cause any issues
-            return
-        
-        if self.rect.left == self.endx and self.rect.top == self.endy:
-            self.direction = 1
-        elif self.rect.left == self.startx and self.rect.top == self.starty:
-            self.direction = 0
 
-        if self.direction == 0:
-            self.rect.move_ip((round(stepx), round(stepy)))
-            self.x += round(stepx)
-            self.y += round(stepy)
-        else:
-            self.rect.move_ip((-round(stepx), -round(stepy)))
-            self.x += -round(stepx)
-            self.y += -round(stepy)
         current_time = pygame.time.get_ticks()
         
-        if self.type == 0:
-            pass
-        elif self.type == 1:
-            if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
-                self.last_bullet_fired = current_time
-        elif self.type == 2:
-            if current_time - self.last_bullet_fired >= self.firing_cooldown:
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
-                self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(not self.firing_right), False, 3000, 10))
-                self.last_bullet_fired = current_time
+        if current_time - self.last_bullet_fired >= self.firing_cooldown:
+            self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, 10))
+            self.last_bullet_fired = current_time
         
         for bullet in self.bullets:
             bullet.move(bullet.x_speed, bullet.y_speed, collidables)
@@ -391,8 +384,10 @@ class Game:
         self.screen_width = 900
         self.screen_height = 600
 
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("can pooper's adventures")
+        self.g = self.screen.copy() # for rescaling
+
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
@@ -415,9 +410,9 @@ class Game:
 
         self.objectives = pygame.sprite.Group()
         self.objectives.add(Objective(800, 450, 100, 100))
-
+       
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 1000, 850, 250, 850, 0, False, 1000))
+        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 850, 250, False, 100))
 
     def process_events(self):
         # process keyboard events
@@ -443,20 +438,17 @@ class Game:
 
             self.enemy_bullets = pygame.sprite.Group()
 
-            self.screen.fill((255, 255, 255))
+            self.g.fill((255, 255, 255))
             
             # draw grid
             for i in range(0, 900, 100):
                 for j in range(0, 1800, 100):
                     rect = pygame.Rect(i, j, 100, 100)
-                    pygame.draw.rect(self.screen, (230, 230, 230), rect, 1)
+                    pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             if self.player.has_reached_objective(self.objectives):
-                message = LARGE_TEXT.render(
-                    "congratulations you won", False, (0, 0, 0))
-                self.screen.blit(message, (10, 200))
                 pygame.display.flip()
-                self.player.respawn(1000)
+                self.player.respawn(250)
             
             for bullet in self.bullets:
                 if (bullet.x > self.screen_width + 100 or bullet.x < -100) or bullet.y > (self.screen_height + 100 or bullet.y < -100):
@@ -465,18 +457,18 @@ class Game:
                 bullet.update()
             
             for enemy in self.enemies:
-                enemy.update(self.collidables, self.fatal, self.bullets, self.screen, self.clock.get_fps())
+                enemy.update(self.collidables, self.fatal, self.bullets, self.g)
                 for bullet in enemy.bullets:
                     self.bullets.add(bullet)
 
-            self.player.update(self.collidables, self.fatal, self.bullets, self.screen)
+            self.player.update(self.collidables, self.fatal, self.bullets, self.g)
 
-            self.player.draw(self.screen)
-            self.collidables.draw(self.screen)
-            self.fatal.draw(self.screen)
-            self.objectives.draw(self.screen)
-            self.bullets.draw(self.screen)
-            self.enemies.draw(self.screen)
+            self.player.draw(self.g)
+            self.collidables.draw(self.g)
+            self.fatal.draw(self.g)
+            self.objectives.draw(self.g)
+            self.bullets.draw(self.g)
+            self.enemies.draw(self.g)
             
             self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
             coordinates = ARIAL.render(
@@ -494,16 +486,16 @@ class Game:
             deaths = ARIAL.render(
                 f"deathCount: {self.player.death_count}", False, (0, 0, 0))
 
-            self.screen.blit(coordinates, (10, 10))
-            self.screen.blit(onground, (10, 25))
-            self.screen.blit(crouching, (10, 40))
-            self.screen.blit(direction, (10, 55))
-            self.screen.blit(fps, (10, 70))
-            self.screen.blit(entitycount, (10, 85))
-            self.screen.blit(deaths, (10, 100))
-
+            self.g.blit(coordinates, (10, 10))
+            self.g.blit(onground, (10, 25))
+            self.g.blit(crouching, (10, 40))
+            self.g.blit(direction, (10, 55))
+            self.g.blit(fps, (10, 70))
+            self.g.blit(entitycount, (10, 85))
+            self.g.blit(deaths, (10, 100))
+            
+            self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
-
             self.clock.tick(self.framecap)
 
 
