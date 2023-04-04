@@ -3,13 +3,9 @@ import sys
 
 from utils import logs, decrease, increase, is_positive, get_image, sign
 from parser import get_level, display
-from src.player import Player
-from src.entity import Entity
-from src.bullet import Bullet
-from src.enemy import Enemy
-from src.props import Crate, Objective, Lava
 
 import pygame
+
 pygame.init()
 pygame.font.init()
 
