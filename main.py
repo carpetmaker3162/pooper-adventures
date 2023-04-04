@@ -1,13 +1,14 @@
 import os
 import sys
+
 from utils import logs, decrease, increase, is_positive, get_image, sign
-import pygame
 from src.player import Player
 from src.entity import Entity
 from src.bullet import Bullet
 from src.enemy import Enemy
 from src.props import Crate, Objective, Lava
 
+import pygame
 pygame.init()
 pygame.font.init()
 
@@ -40,7 +41,7 @@ class Game:
         self.collidables.add(Crate(700, 300, 100, 100, False))
 
         self.fatal = pygame.sprite.Group()
-        self.fatal.add(Lava(0, 540, 960, 100))
+        self.fatal.add(Lava(0, 550, 960, 100))
 
         self.bullets = pygame.sprite.Group()
 
@@ -48,7 +49,7 @@ class Game:
         self.objectives.add(Objective(800, 450, 100, 100))
        
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left.png", 50, 50, False, 1, 2, 50, 25, 30, 850, 250, False, 100))
+        self.enemies.add(Enemy("assets/canpooper_left_angry.png", 850, 250, 50, 50, False, 2, 50, 2, False, 100))
 
     def process_events(self):
         # process keyboard events

@@ -8,8 +8,7 @@ class Entity(pygame.sprite.Sprite):
     1 = player
     2 = enemy
     """
-    def __init__(
-            self, 
+    def __init__(self, 
             image="assets/none.png",
             x=0,
             y=0,

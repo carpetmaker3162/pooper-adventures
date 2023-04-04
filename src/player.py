@@ -3,8 +3,7 @@ from src.entity import Entity
 import pygame
 
 class Player(Entity):
-    def __init__(
-            self,
+    def __init__(self,
             x,
             y,
             width=100,
@@ -26,7 +25,7 @@ class Player(Entity):
         self.death_count = 0
 
         # --- stats you can mess around with ---
-        self.max_x_speed = 5                # max x-velocity
+    self.max_x_speed = 5                # max x-velocity
         self.terminal_velocity = 20         # max y-velocity
         self.ground_x_acceleration = 0.5    # x-acceleration on the ground
         self.air_x_acceleration = 0.2       # x-acceleration in the air
@@ -76,7 +75,7 @@ class Player(Entity):
             self.die()
 
         keys = pygame.key.get_pressed()
-        no_keys_pressed = not (keys[pygame.K_a] or keys[pygame.K_d])
+        no_keys_pressed = not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_LEFT] or keys[pygame.K_RIGHT])
 
         self.on_ground = self.is_on_ground(collidables)
         hitting_ceiling = self.hitting_ceiling(collidables)
