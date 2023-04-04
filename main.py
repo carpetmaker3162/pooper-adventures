@@ -2,6 +2,7 @@ import os
 import sys
 
 from utils import logs, decrease, increase, is_positive, get_image, sign
+from parser import get_level, display
 from src.player import Player
 from src.entity import Entity
 from src.bullet import Bullet
@@ -28,28 +29,13 @@ class Game:
         self.clock = pygame.time.Clock()
         self.stopped = False
         self.framecap = fps
-        self.player = Player(100, 50, 50, 50, False, 100)
         self.entitycount = 1
-
-        self.collidables = pygame.sprite.Group()
-        self.collidables.add(Crate(100, 250, 100, 100, False))
-        self.collidables.add(Crate(300, 150, 50, 50, False))
-        self.collidables.add(Crate(350, 150, 50, 50, False))
-        self.collidables.add(Crate(400, 200, 100, 100, False))
-        self.collidables.add(Crate(600, 100, 50, 50, False))
-        self.collidables.add(Crate(650, 100, 50, 50, False))
-        self.collidables.add(Crate(700, 300, 100, 100, False))
-
-        self.fatal = pygame.sprite.Group()
-        self.fatal.add(Lava(0, 550, 960, 100))
 
         self.bullets = pygame.sprite.Group()
 
-        self.objectives = pygame.sprite.Group()
-        self.objectives.add(Objective(800, 450, 100, 100))
-       
-        self.enemies = pygame.sprite.Group()
-        self.enemies.add(Enemy("assets/canpooper_left_angry.png", 850, 250, 50, 50, False, 2, 50, 2, False, 100))
+        level = get_level(1)
+        data = display(self.g, level)
+        self.__dict__.update(data)
 
     def process_events(self):
         # process keyboard events

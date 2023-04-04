@@ -21,13 +21,12 @@ def get_level(lvl: int):
     return data
 
 def unwrap(d, key):
+    if isinstance(d[key], int):
+        return d[key]
     if "," in d[key]:
-        return d[key].split(,)
+        return list(map(int, d[key].split(",")))
     else:
-        if d[key].isnumeric():
-            return int(d[key])
-        else:
-            return d[key]
+        return d[key]
 
 def display(g: pygame.surface.Surface, data):
     p = data["player"]
@@ -70,22 +69,24 @@ def display(g: pygame.surface.Surface, data):
         lava = Lava(x, y, w, h, False)
         fatalobjs.add(lava)
     
+    objectives = pygame.sprite.Group()
     x, y = unwrap(o, "spawn")
     w, h = unwrap(o, "size")
     objective = Objective(x, y, w, h, False)
+    objectives.add(objective)
     
     player.draw(g)
     enemies.draw(g)
     collidables.draw(g)
     fatalobjs.draw(g)
-    objective.draw(g)
+    objectives.draw(g)
     
     new = {
         "player": player,
-        "enemies": enemy,
+        "enemies": enemies,
         "collidables": collidables,
         "fatal": fatalobjs,
-        "objective": objective
+        "objectives": objectives
     }
 
     return new

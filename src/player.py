@@ -25,7 +25,7 @@ class Player(Entity):
         self.death_count = 0
 
         # --- stats you can mess around with ---
-    self.max_x_speed = 5                # max x-velocity
+        self.max_x_speed = 5                # max x-velocity
         self.terminal_velocity = 20         # max y-velocity
         self.ground_x_acceleration = 0.5    # x-acceleration on the ground
         self.air_x_acceleration = 0.2       # x-acceleration in the air
