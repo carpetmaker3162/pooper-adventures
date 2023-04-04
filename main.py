@@ -30,11 +30,16 @@ class Game:
         self.stopped = False
         self.framecap = fps
         self.entitycount = 1
+        self.level = 1
+        self.draw_level(self.level)
 
         self.bullets = pygame.sprite.Group()
-
-        level = get_level(1)
-        data = display(self.g, level)
+    
+    # to be called when an entire new level has to be loaded
+    def draw_level(self, id):
+        layout = get_level(id)
+        self.g.fill((255, 255, 255))
+        data = display(self.g, layout)
         self.__dict__.update(data)
 
     def process_events(self):
@@ -71,7 +76,9 @@ class Game:
 
             if self.player.has_reached_objective(self.objectives):
                 pygame.display.flip()
+                self.level += 1
                 self.player.respawn(250)
+                self.draw_level(self.level)
             
             for bullet in self.bullets:
                 if (bullet.x > self.screen_width + 100 or bullet.x < -100) or bullet.y > (self.screen_height + 100 or bullet.y < -100):

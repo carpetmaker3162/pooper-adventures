@@ -14,5 +14,6 @@ will (hopefully) be my first big project
 - [x] Implement HP and HP bars
 - [x] Add enemies
 - [x] Fix bullets (lmfao)
-- [ ] Add a level encoding/parsing system
+- [x] Add a level encoding/parsing system
+- [ ] Add more levels
 - [ ] Add music & SFX
