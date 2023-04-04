@@ -14,7 +14,5 @@ will (hopefully) be my first big project
 - [x] Implement HP and HP bars
 - [x] Add enemies
 - [x] Fix bullets (lmfao)
-- [ ] Try to add global score system (looking almost impossible right now)
-- [ ] Add a relative coordinate system
 - [ ] Add a level encoding/parsing system
 - [ ] Add music & SFX
