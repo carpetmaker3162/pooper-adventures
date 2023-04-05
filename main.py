@@ -46,7 +46,11 @@ class Game:
         layout = get_level(id)
         self.g.fill((255, 255, 255))
         data = display(self.g, layout)
-        self.__dict__.update(data)
+        self.player = data["player"]
+        self.enemies = data["enemies"]
+        self.collidables = data["collidables"]
+        self.fatal = data["fatal"]
+        self.objectives = data["objectives"]
 
     def process_events(self):
         # process keyboard events
@@ -64,6 +68,9 @@ class Game:
                 self.player.last_bullet_fired = current_time
             else:
                 return
+        elif keys[pygame.K_k]:
+            pygame.time.wait(50)
+            self.next_level()
 
     def next_level(self):
         pygame.display.flip()

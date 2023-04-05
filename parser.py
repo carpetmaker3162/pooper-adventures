@@ -50,7 +50,7 @@ def display(g: pygame.surface.Surface, data):
         firingrate = unwrap(enemy, "firingRate")
 
         enemy = Enemy(f"assets/canpooper_{dir}_angry.png",
-            x, y, w, h, False, 2, hp, firingdamage, (dir == "right"), firingrate)
+        x, y, w, h, False, 2, hp, firingdamage, (dir == "right"), firingrate)
         enemies.add(enemy)
 
     collidables = pygame.sprite.Group()
