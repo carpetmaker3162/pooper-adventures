@@ -1,0 +1,31 @@
+{
+    "player": {
+        "spawn": "100,50",
+        "size": "50,50",
+        "facing": "right",
+        "hp": 100
+    },
+    "enemy": [
+        {
+            "spawn": "850,250",
+            "size": "50,50",
+            "facing": "left",
+            "hp": 50,
+            "firingDamage": 25,
+            "firingRate": 500
+        }
+    ],
+    "collidable": [
+        { "spawn": "100,200", "size": "100,100"},
+        { "spawn": "300,150", "size": "50,50" },
+        { "spawn": "350,150", "size": "50,50" },
+        { "spawn": "400,200", "size": "100,100" },
+        { "spawn": "600,100", "size": "50,50" },
+        { "spawn": "650,100", "size": "50,50" },
+        { "spawn": "700,300", "size": "100,100" }
+    ],
+    "objective": { "spawn": "850,450", "size": "50,50" },
+    "fatal": [
+        { "spawn": "0,550", "size": "960,100" }
+    ]
+}

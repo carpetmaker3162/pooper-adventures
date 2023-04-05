@@ -3,6 +3,7 @@ import sys
 
 from utils import logs, decrease, increase, is_positive, get_image, sign
 from parser import get_level, display
+from src.bullet import Bullet
 
 import pygame
 
@@ -11,6 +12,15 @@ pygame.font.init()
 
 ARIAL = pygame.font.SysFont("ARIAL", 12)
 LARGE_TEXT = pygame.font.SysFont("ARIAL", 40)
+
+levels = []
+level_directory = os.listdir("levels")
+
+for filename in level_directory:
+    id = int(filename.removesuffix(".json"))
+    levels.append(id)
+
+MAX_LEVEL = max(levels)
 
 class Game:
     def __init__(self, fps) -> None:
@@ -55,6 +65,24 @@ class Game:
             else:
                 return
 
+    def next_level(self):
+        pygame.display.flip()
+        self.g.fill((255, 255, 255))
+
+        if self.level >= MAX_LEVEL:
+            self.level = 1
+            self.screen.fill((255, 255, 255))
+            w = LARGE_TEXT.render(
+                f"you win lets goooooooooooo", False, (0, 0, 0))
+            self.screen.blit(w, (10, 100))
+            pygame.display.flip()
+            self.player.respawn(2000)
+        else:
+            self.level += 1
+            self.player.respawn(250)
+
+        self.draw_level(self.level)
+
     def loop(self):
         while not self.stopped:
             self.process_events()
@@ -71,10 +99,7 @@ class Game:
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             if self.player.has_reached_objective(self.objectives):
-                pygame.display.flip()
-                self.level += 1
-                self.player.respawn(250)
-                self.draw_level(self.level)
+                self.next_level()
             
             for bullet in self.bullets:
                 if (bullet.x > self.screen_width + 100 or bullet.x < -100) or bullet.y > (self.screen_height + 100 or bullet.y < -100):

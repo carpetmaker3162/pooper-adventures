@@ -12,7 +12,7 @@ import pygame
 def get_level(lvl: int):
     fp = f"levels/{lvl}.json"
     if not os.path.exists(fp):
-        raise FileNotFoundError
+        raise FileNotFoundError(f"Level {lvl} does not exist")
     
     with open(fp, "r") as f:
         raw = f.read()
