@@ -48,9 +48,5 @@ class Enemy(Entity):
             self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), False, 3000, self.bulletdamage))
             self.last_bullet_fired = current_time
         
-        for bullet in self.bullets:
-            bullet.move(bullet.x_speed, bullet.y_speed, collidables)
-            bullet.update()
-        
         self.bullets.draw(screen)
 
