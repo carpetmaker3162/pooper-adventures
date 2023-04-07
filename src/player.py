@@ -70,9 +70,6 @@ class Player(Entity):
 
     def update(self, collidables, fatal, bullets, screen):
         super().update(collidables, fatal, bullets, screen)
-        
-        if (pygame.sprite.spritecollideany(self, fatal) or self.y > 2000 or self.hp <= 0) and not self.invulnerable:
-            self.die()
 
         keys = pygame.key.get_pressed()
         no_keys_pressed = not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_LEFT] or keys[pygame.K_RIGHT])

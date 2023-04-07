@@ -12,17 +12,34 @@
             "facing": "left",
             "hp": 50,
             "firingDamage": 25,
-            "firingRate": 500
+            "firingRate": 1000
+        },
+        {
+            "spawn": "550,100",
+            "size": "50,50",
+            "facing": "left",
+            "hp": 50,
+            "firingDamage": 25,
+            "firingRate": 1000
+        },
+        {
+            "spawn": "650,50",
+            "size": "50,50",
+            "facing": "left",
+            "hp": 50,
+            "firingDamage": 25,
+            "firingRate": 1000
         }
     ],
     "collidable": [
         { "spawn": "100,200", "size": "100,100"},
         { "spawn": "300,150", "size": "50,50" },
         { "spawn": "350,150", "size": "50,50" },
-        { "spawn": "400,200", "size": "100,100" },
+        { "spawn": "400,200", "size": "50,50" },
         { "spawn": "600,100", "size": "50,50" },
         { "spawn": "650,100", "size": "50,50" },
-        { "spawn": "700,300", "size": "100,100" }
+        { "spawn": "700,300", "size": "100,100" },
+        { "spawn": "550,150", "size": "50,50" }
     ],
     "objective": { "spawn": "850,450", "size": "50,50" },
     "fatal": [

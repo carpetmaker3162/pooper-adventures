@@ -68,9 +68,6 @@ class Game:
                 self.player.last_bullet_fired = current_time
             else:
                 return
-        elif keys[pygame.K_k]:
-            pygame.time.wait(50)
-            self.next_level()
 
     def next_level(self):
         pygame.display.flip()
@@ -104,6 +101,10 @@ class Game:
                 for j in range(0, 1800, 100):
                     rect = pygame.Rect(i, j, 100, 100)
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
+
+            if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 2000 or self.player.hp <= 0) and not self.player.invulnerable:
+                self.draw_level(self.level)
+                self.player.die()
 
             if self.player.has_reached_objective(self.objectives):
                 self.next_level()
