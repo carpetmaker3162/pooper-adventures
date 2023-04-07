@@ -9,7 +9,6 @@ class Bullet(Entity):
             team=0,
             speed=100,
             direction=0,
-            hitbox=False,
             lifetime=8000,
             damage=10,
             screen_width=900,
@@ -23,7 +22,7 @@ class Bullet(Entity):
         0 = left
         1 = right
         """
-        super().__init__("assets/bullet.png", x, y, 15, 5, hitbox)
+        super().__init__("assets/bullet.png", x, y, 15, 5)
         self.team = team
         
         if direction:

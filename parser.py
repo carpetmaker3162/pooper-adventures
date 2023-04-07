@@ -38,7 +38,7 @@ def display(g: pygame.surface.Surface, data):
     x, y = unwrap(p, "spawn")
     w, h = unwrap(p, "size")
     hp = unwrap(p, "hp")
-    player = Player(x, y, w, h, False, hp)
+    player = Player(x, y, w, h, hp)
     
     enemies = pygame.sprite.Group()
     for enemy in e:
@@ -50,7 +50,7 @@ def display(g: pygame.surface.Surface, data):
         firingrate = unwrap(enemy, "firingRate")
 
         enemy = Enemy(f"assets/canpooper_{dir}_angry.png",
-        x, y, w, h, False, 2, hp, firingdamage, (dir == "right"), firingrate)
+        x, y, w, h, hp, firingdamage, (dir == "right"), firingrate)
         enemies.add(enemy)
 
     collidables = pygame.sprite.Group()
@@ -58,7 +58,7 @@ def display(g: pygame.surface.Surface, data):
         x, y = unwrap(collidable, "spawn")
         w, h = unwrap(collidable, "size")
 
-        collidable = Crate(x, y, w, h, False)
+        collidable = Crate(x, y, w, h)
         collidables.add(collidable)
     
     fatalobjs = pygame.sprite.Group()
@@ -66,13 +66,13 @@ def display(g: pygame.surface.Surface, data):
         x, y = unwrap(fatal, "spawn")
         w, h = unwrap(fatal, "size")
 
-        lava = Lava(x, y, w, h, False)
+        lava = Lava(x, y, w, h)
         fatalobjs.add(lava)
     
     objectives = pygame.sprite.Group()
     x, y = unwrap(o, "spawn")
     w, h = unwrap(o, "size")
-    objective = Objective(x, y, w, h, False)
+    objective = Objective(x, y, w, h)
     objectives.add(objective)
     
     player.draw(g)

@@ -14,7 +14,6 @@ class Entity(pygame.sprite.Sprite):
             y=0,
             width=100,
             height=100,
-            show_hitbox=False,
             hp=-1,
             hp_bar_size=None,
             team=0):
@@ -47,13 +46,11 @@ class Entity(pygame.sprite.Sprite):
         
         self.width = width
         self.height = height
-
-        self.hitbox = show_hitbox
         
     def draw(self, screen):
-        if self.hitbox:
-            pygame.draw.rect(screen, pygame.Color(
-                255, 0, 0), self.rect, width=5)
+        #if self.hitbox:
+        #    pygame.draw.rect(screen, pygame.Color(
+        #        255, 0, 0), self.rect, width=5)
         screen.blit(self.image, (self.rect.center[0] - self.width/2, self.rect.center[1] - self.height/2))
     
     def move(self, x, y, collidables):

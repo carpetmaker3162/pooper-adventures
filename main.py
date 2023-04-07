@@ -74,7 +74,7 @@ class Game:
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
             if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
-                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.facing_right, False, 3000, 33))
+                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.facing_right, 3000, 33))
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -144,12 +144,12 @@ class Game:
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
-                self.kill(self.bullets)
+
                 self.draw_level(self.level)
                 self.player.die()
 
             if self.player.has_reached_objective(self.objectives):
-                self.kill(self.bullets)
+
                 self.next_level()
                 continue
             
