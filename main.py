@@ -38,6 +38,8 @@ class Game:
         self.entitycount = 1
         self.level = 1
         self.draw_level(self.level)
+        self.show_info = False
+        self.event_ticker = 0
 
         self.bullets = pygame.sprite.Group()
     
@@ -52,9 +54,17 @@ class Game:
         self.fatal = data["fatal"]
         self.objectives = data["objectives"]
 
+    # kill a group (used to remove all the bullets)
+    def kill(self, group: pygame.sprite.Group):
+        for sprite in group:
+            sprite.kill()
+
+    # process keyboard events
     def process_events(self):
-        # process keyboard events
         keys = pygame.key.get_pressed()
+
+        if self.event_ticker > 0:
+            self.event_ticker -= 1
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -69,6 +79,12 @@ class Game:
             else:
                 return
 
+        if keys[pygame.K_o]:
+            if self.event_ticker == 0:
+                self.event_ticker = 10
+                self.show_info = not self.show_info
+
+    # move to next level and display
     def next_level(self):
         pygame.display.flip()
         self.g.fill((255, 255, 255))
@@ -87,12 +103,37 @@ class Game:
 
         self.draw_level(self.level)
 
+    def display_game_info(self):
+        self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
+
+        coordinates = ARIAL.render(
+            f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
+        onground = ARIAL.render(
+            f"onGround: {self.player.on_ground}", False, (0, 0, 0))
+        crouching = ARIAL.render(
+            f"crouching: {self.player.crouching}", False, (0, 0, 0))
+        direction = ARIAL.render(
+            f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
+        fps = ARIAL.render(
+            f"FPS: {round(self.clock.get_fps(), 1)}", False, (0, 0, 0))
+        entitycount = ARIAL.render(
+            f"entityCount: {self.entitycount}", False, (0, 0, 0))
+        deaths = ARIAL.render(
+            f"deathCount: {self.player.death_count}", False, (0, 0, 0))
+
+        self.g.blit(coordinates, (10, 10))
+        self.g.blit(onground, (10, 25))
+        self.g.blit(crouching, (10, 40))
+        self.g.blit(direction, (10, 55))
+        self.g.blit(fps, (10, 70))
+        self.g.blit(entitycount, (10, 85))
+        self.g.blit(deaths, (10, 100))
+
+
     def loop(self):
         while not self.stopped:
             self.process_events()
             pygame.event.pump()
-
-            self.enemy_bullets = pygame.sprite.Group()
 
             self.g.fill((255, 255, 255))
             
@@ -102,15 +143,18 @@ class Game:
                     rect = pygame.Rect(i, j, 100, 100)
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
-            if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 2000 or self.player.hp <= 0) and not self.player.invulnerable:
+            if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
+                self.kill(self.bullets)
                 self.draw_level(self.level)
                 self.player.die()
 
             if self.player.has_reached_objective(self.objectives):
+                self.kill(self.bullets)
                 self.next_level()
+                continue
             
             for bullet in self.bullets:
-                if (bullet.x > self.screen_width + 100 or bullet.x < -100) or bullet.y > (self.screen_height + 100 or bullet.y < -100):
+                if bullet.x > self.screen_width or bullet.x < 0 or bullet.y > self.screen_height or bullet.y < 0:
                     bullet.kill()
                 bullet.move(bullet.x_speed, bullet.y_speed, self.collidables)
                 bullet.update()
@@ -128,30 +172,9 @@ class Game:
             self.objectives.draw(self.g)
             self.bullets.draw(self.g)
             self.enemies.draw(self.g)
-            
-            self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
-            coordinates = ARIAL.render(
-                f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
-            onground = ARIAL.render(
-                f"onGround: {self.player.on_ground}", False, (0, 0, 0))
-            crouching = ARIAL.render(
-                f"crouching: {self.player.crouching}", False, (0, 0, 0))
-            direction = ARIAL.render(
-                f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
-            fps = ARIAL.render(
-                f"FPS: {round(self.clock.get_fps(), 1)}", False, (0, 0, 0))
-            entitycount = ARIAL.render(
-                f"entityCount: {self.entitycount}", False, (0, 0, 0))
-            deaths = ARIAL.render(
-                f"deathCount: {self.player.death_count}", False, (0, 0, 0))
 
-            self.g.blit(coordinates, (10, 10))
-            self.g.blit(onground, (10, 25))
-            self.g.blit(crouching, (10, 40))
-            self.g.blit(direction, (10, 55))
-            self.g.blit(fps, (10, 70))
-            self.g.blit(entitycount, (10, 85))
-            self.g.blit(deaths, (10, 100))
+            if self.show_info:
+                self.display_game_info()
             
             self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
