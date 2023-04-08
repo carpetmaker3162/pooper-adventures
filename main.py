@@ -74,7 +74,7 @@ class Game:
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
             if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
-                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.facing_right, 3000, 33))
+                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.direction, 3000, 33))
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -83,6 +83,10 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
+        if keys[pygame.K_k]:
+            if self.event_ticker == 0:
+                self.event_ticker = 10
+                self.next_level()
 
     # move to next level and display
     def next_level(self):
@@ -113,7 +117,7 @@ class Game:
         crouching = ARIAL.render(
             f"crouching: {self.player.crouching}", False, (0, 0, 0))
         direction = ARIAL.render(
-            f"facing: {'RIGHT' if self.player.facing_right else 'LEFT'}", False, (0, 0, 0))
+            f"facing: {self.player.direction.upper()}", False, (0, 0, 0))
         fps = ARIAL.render(
             f"FPS: {round(self.clock.get_fps(), 1)}", False, (0, 0, 0))
         entitycount = ARIAL.render(
@@ -138,18 +142,16 @@ class Game:
             self.g.fill((255, 255, 255))
             
             # draw grid
-            for i in range(0, 900, 100):
-                for j in range(0, 1800, 100):
+            for i in range(0, self.screen_width, 100):
+                for j in range(0, self.screen_height, 100):
                     rect = pygame.Rect(i, j, 100, 100)
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
-
                 self.draw_level(self.level)
                 self.player.die()
 
             if self.player.has_reached_objective(self.objectives):
-
                 self.next_level()
                 continue
             
@@ -182,5 +184,6 @@ class Game:
 
 
 if __name__ == "__main__":
-    h = Game(fps=60)
-    h.loop()
+    window = Game(fps=60)
+    window.loop()
+    pygame.quit()

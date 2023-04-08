@@ -11,7 +11,7 @@ class Enemy(Entity):
             height=100,
             hp=50,
             bullet_damage=10,
-            firing_right=False,
+            facing="left",
             firing_cooldown=1000):
 
         """
@@ -23,8 +23,7 @@ class Enemy(Entity):
         bullet_damage:   damage dealt by its bullets
         """
         super().__init__(image, x, y, width, height, hp)
-        self.direction = 0 # 0 if going towards end, 1 if going towards start
-        self.firing_right = firing_right
+        self.direction = facing
         self.firing_cooldown = firing_cooldown
         self.team = 2
         self.hp = hp
@@ -40,7 +39,7 @@ class Enemy(Entity):
         current_time = pygame.time.get_ticks()
         
         if current_time - self.last_bullet_fired >= self.firing_cooldown:
-            self.bullets.add(Bullet(self.x, self.y, self.team, 15, int(self.firing_right), 3000, self.bullet_damage))
+            self.bullets.add(Bullet(self.x, self.y, self.team, 15, self.direction, 3000, self.bullet_damage))
             self.last_bullet_fired = current_time
         
         self.bullets.draw(screen)

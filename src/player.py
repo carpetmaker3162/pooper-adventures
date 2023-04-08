@@ -7,7 +7,7 @@ class Player(Entity):
             x,
             y,
             width=100,
-            height=200,
+            height=100,
             hp=100):
 
         super().__init__("assets/canpooper_left.png", x, y, width, height, hp, None, 1)
@@ -37,7 +37,7 @@ class Player(Entity):
         # player states
         self.crouching = False
         self.on_ground = False
-        self.facing_right = True
+        self.direction = "right"
         self.hp = self.max_hp
 
     def is_on_ground(self, entities):
@@ -92,46 +92,43 @@ class Player(Entity):
 
         
         # de-acceleration
-        if no_keys_pressed and self.facing_right:
+        if no_keys_pressed and self.direction == "right":
             self.x_speed -= self.x_acceleration
             if self.x_speed < 0:
                 self.x_speed = 0
-        elif no_keys_pressed and not self.facing_right:
+        elif no_keys_pressed and self.direction == "left":
             self.x_speed += self.x_acceleration
             if self.x_speed > 0:
                 self.x_speed = 0
 
-
+        # moving left
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            # moving left
-            self.facing_right = False
+            self.direction = "left"
             self.x_speed -= self.x_acceleration
             if self.x_speed < -self.max_x_speed:
                 self.x_speed = -self.max_x_speed  # Reduce speed to max speed
 
-
+        # moving right
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            # moving right
-            self.facing_right = True
+            self.direction = "right"
             self.x_speed += self.x_acceleration
             if self.x_speed > self.max_x_speed:
                 self.x_speed = self.max_x_speed  # Reduce speed to max speed
 
-
+        # jumping
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and not self.crouching and self.on_ground:
-            # jumping
             self.y_speed = -self.jump_power * 10
 
         self.crouching = False
 
-
+        # crouching
         if (keys[pygame.K_DOWN] or keys[pygame.K_s] or keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]) and self.on_ground:
             # crouching
             self.x_speed *= 0.7
             self.crouching = True
 
         # change player image
-        if self.facing_right:
+        if self.direction == "right":
             self.image = self.right_image
         else:
             self.image = self.left_image

@@ -8,7 +8,7 @@ class Bullet(Entity):
             y,
             team=0,
             speed=100,
-            direction=0,
+            direction="right",
             lifetime=8000,
             damage=10,
             screen_width=900,
@@ -25,7 +25,7 @@ class Bullet(Entity):
         super().__init__("assets/bullet.png", x, y, 15, 5)
         self.team = team
         
-        if direction:
+        if direction == "right":
             self.x_speed = speed
         else:
             self.x_speed = -speed
