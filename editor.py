@@ -9,10 +9,11 @@ from utils import get_image
 import pygame
 pygame.init()
 
-def floor_to_nearest(coordinate: tuple, incr: int):
+def floor_to_nearest(coordinate: tuple, incr: tuple):
     x, y = coordinate
-    return (incr * math.floor(x / incr),
-            incr * math.floor(y / incr))
+    incrx, incry = incr
+    return (incrx * math.floor(x / incrx),
+            incry * math.floor(y / incry))
 
 paths = {
     "player": "assets/canpooper_right.png",
@@ -79,6 +80,7 @@ class Editor:
         self.mouse_pos = (0, 0)
         self.active_component_name = "player"
         self.mouse = True # use mouse or keyboard
+        self.event_ticker = 10
         
         self.component_w = 100
         self.component_h = 100
@@ -194,14 +196,27 @@ class Editor:
         keys = pygame.key.get_pressed()
         
         # amount changed by arrow key presses
-        if keys[pygame.K_j]:
-            self.component_h -= 25
-        if keys[pygame.K_k]:
-            self.component_h += 25
-        if keys[pygame.K_h]:
-            self.component_w -= 25
-        if keys[pygame.K_l]:
-            self.component_w += 25
+        if self.event_ticker > 0:
+            self.event_ticker -= 1
+        elif self.event_ticker == 0:
+            self.event_ticker = 5
+            if keys[pygame.K_j]:
+                self.component_h -= 25
+            elif keys[pygame.K_k]:
+                self.component_h += 25
+            elif keys[pygame.K_h]:
+                self.component_w -= 25
+            elif keys[pygame.K_l]:
+                self.component_w += 25
+            elif keys[pygame.K_UP]:
+                self.component_w *= 2
+                self.component_h *= 2
+            elif keys[pygame.K_DOWN]:
+                self.component_w /= 2
+                self.component_h /= 2
+
+        self.component_w = max(25, self.component_w)
+        self.component_h = max(25, self.component_h)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -221,7 +236,7 @@ class Editor:
                             else:
                                 self.change_component(button.id)
                 else:
-                    gx, gy = floor_to_nearest((x, y), 100) # change the 100 after smaller sizes are added
+                    gx, gy = floor_to_nearest((x, y), (self.component_w, self.component_h))
                     component = self.get_component(gx, gy,
                                                    self.component_w,
                                                    self.component_h) # change w and h  
@@ -242,7 +257,7 @@ class Editor:
 
             if self.mouse:
                 px, py = self.mouse_pos
-                x, y = floor_to_nearest((px, py), 100)
+                x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
 
             self.buttons.draw(self.g)
 
