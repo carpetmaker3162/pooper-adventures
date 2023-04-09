@@ -54,11 +54,6 @@ class Game:
         self.fatal = data["fatal"]
         self.objectives = data["objectives"]
 
-    # kill a group (used to remove all the bullets)
-    def kill(self, group: pygame.sprite.Group):
-        for sprite in group:
-            sprite.kill()
-
     # process keyboard events
     def process_events(self):
         keys = pygame.key.get_pressed()
@@ -87,6 +82,10 @@ class Game:
     # move to next level and display
     def next_level(self):
         pygame.display.flip()
+
+        for bullet in self.bullets:
+            bullet.kill()
+        
         self.g.fill((255, 255, 255))
 
         if self.level >= MAX_LEVEL:
@@ -138,6 +137,8 @@ class Game:
             self.g.fill((255, 255, 255))
 
             if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
+                for bullet in self.bullets:
+                    bullet.kill()
                 self.draw_level(self.level)
                 self.player.die()
 
