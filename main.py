@@ -1,7 +1,7 @@
 import os
 import sys
 
-from utils import logs, decrease, increase, is_positive, get_image, sign
+from utils import decrease, increase, is_positive, get_image, sign
 from parser import get_level, display
 from src.bullet import Bullet
 
