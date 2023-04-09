@@ -59,8 +59,11 @@ class Entity(pygame.sprite.Sprite):
 
         while self.colliding_at(0, dy, collidables):
             dy -= sign(dy)
+        while self.colliding_at(dx, 0, collidables):
+            dx -= sign(dx)
         while self.colliding_at(dx, dy, collidables):
             dx -= sign(dx)
+            dy -= sign(dy)
 
         self.y += dy
         self.x += dx
