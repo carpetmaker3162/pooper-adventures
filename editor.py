@@ -1,10 +1,12 @@
 import json
 import os
+import sys
 import math
 from src.player import Player
 from src.enemy import Enemy
 from src.props import Crate, Lava, Objective
 from utils import get_image
+from parser import display
 
 import pygame
 pygame.init()
@@ -71,7 +73,7 @@ class Button(pygame.sprite.Sprite):
             return False
 
 class Editor:
-    def __init__(self, fps) -> None:
+    def __init__(self, fps, imported_level=None) -> None:
         self.screen_width = 900
         self.screen_height = 700
         self.fps = fps
@@ -97,6 +99,26 @@ class Editor:
             "objective": {},
             "fatal": []
         }
+        
+        # display imported level
+        if imported_level is not None:
+            if not os.path.exists(imported_level):
+                raise FileNotFoundError("lmao idiot")
+            with open(imported_level) as f:
+                raw = f.read()
+                data = json.loads(raw)
+                data = display(self.g, data)
+            self.player = data["player"]
+            self.enemies = data["enemies"]
+            self.collidables = data["collidables"]
+            self.fatal = data["fatal"]
+            self.objective = data["objectives"].sprites()[0]
+        else:
+            self.player = Player(-1000, -1000)
+            self.enemies = pygame.sprite.Group()
+            self.collidables = pygame.sprite.Group()
+            self.objective = Objective(-1000, -1000)
+            self.fatal = pygame.sprite.Group()
 
         # add buttons (i is for button positions)
         self.buttons = pygame.sprite.Group()
@@ -118,12 +140,6 @@ class Editor:
                                     width=50, height=50,
                                     id="save")
         self.buttons.add(save_button)
-
-        self.player = Player(-1000, -1000)
-        self.enemies = pygame.sprite.Group()
-        self.collidables = pygame.sprite.Group()
-        self.objective = Objective(-1000, -1000)
-        self.fatal = pygame.sprite.Group()
 
     def get_component(self, x, y, w, h):
         match self.active_component_name:
@@ -271,8 +287,6 @@ class Editor:
             px, py = self.mouse_pos
             x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
 
-            self.buttons.draw(self.g)
-
             # draw component image that is previewed on the grid
             if (0 < px < self.screen_width and
                 0 < py < self.screen_height - 100 and
@@ -287,12 +301,18 @@ class Editor:
             self.collidables.draw(self.g)
             self.objective.draw(self.g)
             self.fatal.draw(self.g)
+            pygame.draw.rect(self.g, (255, 255, 255), pygame.Rect(0, 600, 900, 100))
+            self.buttons.draw(self.g)
 
             self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.fps)
 
 if __name__ == "__main__":
-    editor = Editor(fps=60)
+    imported_level = None
+    if len(sys.argv) > 1:
+        imported_level = sys.argv[1]
+
+    editor = Editor(60, imported_level)
     editor.loop()
     pygame.quit()
