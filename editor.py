@@ -224,7 +224,7 @@ class Editor:
 
         print(f"Saved at '{fp}'")
 
-    def process_events(self):
+    def process_key_events(self):
         keys = pygame.key.get_pressed()
 
         # amount changed by arrow key presses
@@ -252,46 +252,52 @@ class Editor:
         self.component_w = max(25, self.component_w)
         self.component_h = max(25, self.component_h)
 
+    def process_mouse_events(self):
+        x, y = self.mouse_pos
+        if y > self.screen_height - 100:
+            for button in self.buttons:
+                if button.is_hovering(x, y):
+                    if button.id == "delete":
+                        self.delete_mode = True
+                    elif button.id == "save":
+                        self.save()
+                    elif button.id == "reflect":
+                        self.orientation = ("left" if
+                                            self.orientation == "right" else
+                                            "right")
+                    else:
+                        self.delete_mode = False
+                        self.change_component(button.id)
+        else:
+            gx, gy = floor_to_nearest(
+                (x, y), (self.component_w, self.component_h))
+            if self.delete_mode:
+                for e in self.enemies:
+                    if e.lies_on(x, y):
+                        e.kill()
+                for c in self.collidables:
+                    if c.lies_on(x, y):
+                        c.kill()
+                for f in self.fatal:
+                    if f.lies_on(x, y):
+                        f.kill()
+            else:
+                component = self.get_component(gx, gy,
+                                               self.component_w,
+                                               self.component_h,
+                                               orient=self.orientation)
+                self.set_component(component)
+
+    def process_events(self):
+        self.process_key_events()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.stopped = True
                 return
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = self.mouse_pos
-                if y > self.screen_height - 100:
-                    for button in self.buttons:
-                        if button.is_hovering(x, y):
-                            if button.id == "delete":
-                                self.delete_mode = True
-                            elif button.id == "save":
-                                self.save()
-                            elif button.id == "reflect":
-                                self.orientation = ("left" if
-                                                    self.orientation == "right" else
-                                                    "right")
-                            else:
-                                self.delete_mode = False
-                                self.change_component(button.id)
-                else:
-                    gx, gy = floor_to_nearest(
-                        (x, y), (self.component_w, self.component_h))
-                    if self.delete_mode:
-                        for e in self.enemies:
-                            if e.lies_on(x, y):
-                                e.kill()
-                        for c in self.collidables:
-                            if c.lies_on(x, y):
-                                c.kill()
-                        for f in self.fatal:
-                            if f.lies_on(x, y):
-                                f.kill()
-                    else:
-                        component = self.get_component(gx, gy,
-                                                       self.component_w,
-                                                       self.component_h,
-                                                       orient=self.orientation)
-                        self.set_component(component)
+                self.process_mouse_events()
 
     def loop(self):
         while not self.stopped:
