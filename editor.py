@@ -130,23 +130,23 @@ class Editor:
                             id=target)
             self.buttons.add(button)
 
-        delete_button = Button(image="assets/trash.png",
+        reflect_button = Button(image="assets/reflection.png",
                                     x=625, y=625,
+                                    width=50, height=50,
+                                    id="reflect")
+        self.buttons.add(reflect_button)
+
+        delete_button = Button(image="assets/trash.png",
+                                    x=725, y=625,
                                     width=50, height=50,
                                     id="delete")
         self.buttons.add(delete_button)
 
         save_button = Button(image="assets/download.png",
-                                    x=725, y=625,
+                                    x=825, y=625,
                                     width=50, height=50,
                                     id="save")
         self.buttons.add(save_button)
-
-        reflect_button = Button(image="assets/reflection.png",
-                                    x=825, y=625,
-                                    width=50, height=50,
-                                    id="reflect")
-        self.buttons.add(reflect_button)
 
     def get_component(self, x, y, w, h, **kwargs):
         match self.active_component_name:
