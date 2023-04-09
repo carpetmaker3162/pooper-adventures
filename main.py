@@ -136,12 +136,6 @@ class Game:
             pygame.event.pump()
 
             self.g.fill((255, 255, 255))
-            
-            # draw grid
-            for i in range(0, self.screen_width, 100):
-                for j in range(0, self.screen_height, 100):
-                    rect = pygame.Rect(i, j, 100, 100)
-                    pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
                 self.draw_level(self.level)
