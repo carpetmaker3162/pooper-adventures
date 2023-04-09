@@ -6,7 +6,7 @@ from src.player import Player
 from src.enemy import Enemy
 from src.props import Crate, Lava, Objective
 from utils import get_image
-from parser import display
+from parser import display, serialize
 
 import pygame
 pygame.init()
@@ -26,34 +26,6 @@ image_paths = {
     "objective": "assets/burger.png",
     "fatal": "assets/lava.png"
 }
-
-
-def serialize(component):
-    x = component.x
-    y = component.y
-    w = component.width
-    h = component.height
-
-    if isinstance(component, Player):
-        return {
-            "spawn": f"{x},{y}",
-            "size": f"{w},{h}",
-            "facing": "right",
-            "hp": 100
-        }
-    elif isinstance(component, Enemy):
-        return {
-            "spawn": f"{x},{y}", "size": f"{w},{h}",
-            "facing": component.facing,
-            "hp": 50,
-            "firingDamage": 25,
-            "firingRate": 1000
-        }
-    else:
-        return {
-            "spawn": f"{x},{y}",
-            "size": f"{w},{h}"
-        }
 
 
 class Button(pygame.sprite.Sprite):
