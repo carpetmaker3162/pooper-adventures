@@ -254,6 +254,8 @@ class Editor:
 
     def process_mouse_events(self):
         x, y = self.mouse_pos
+        # Checks whether the mouse clicked within the toolbar
+        # or not.
         if y > self.screen_height - 100:
             for button in self.buttons:
                 if button.is_hovering(x, y):
