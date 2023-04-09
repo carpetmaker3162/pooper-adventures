@@ -291,6 +291,9 @@ class Editor:
                 self.set_component(component)
 
     def process_events(self):
+        pygame.event.pump()
+        self.mouse_pos = pygame.mouse.get_pos()
+
         self.process_key_events()
 
         for event in pygame.event.get():
@@ -301,43 +304,63 @@ class Editor:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.process_mouse_events()
 
+    def draw_grid(self):
+        for i in range(0, self.screen_width, 100):
+            for j in range(0, self.screen_height - 100, 100):
+                rect = pygame.Rect(i, j, 100, 100)
+                pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
+
+    def render(self, mouse_x, mouse_y, mouse_px, mouse_py):
+        # draw component image that is previewed on the grid
+        if (
+            0 < mouse_px < self.screen_width and
+            0 < mouse_py < self.screen_height - 100 and
+            not self.delete_mode
+        ):
+            component = self.get_component(
+                mouse_x, mouse_y,
+                self.component_w,
+                self.component_h,
+                orient=self.orientation
+            )  # change w/h later
+
+            component.draw(self.g)
+
+        self.draw_grid()
+
+        pygame.draw.rect(
+            self.g,
+            (255, 255, 255),
+            pygame.Rect(0, 600, 900, 100)
+        )
+
+        self.player.draw(self.g)
+        self.enemies.draw(self.g)
+        self.collidables.draw(self.g)
+        self.objective.draw(self.g)
+        self.fatal.draw(self.g)
+        self.buttons.draw(self.g)
+
+        self.screen.blit(
+            pygame.transform.scale(
+                self.g, self.screen.get_rect().size
+            ),
+            (0, 0)
+        )
+
     def loop(self):
         while not self.stopped:
-            pygame.event.pump()
-            self.mouse_pos = pygame.mouse.get_pos()
             self.process_events()
 
             self.g.fill((255, 255, 255))
-            for i in range(0, self.screen_width, 100):
-                for j in range(0, self.screen_height - 100, 100):
-                    rect = pygame.Rect(i, j, 100, 100)
-                    pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             px, py = self.mouse_pos
-            x, y = floor_to_nearest(
-                (px, py), (self.component_w, self.component_h))
+            mouse_x, mouse_y = floor_to_nearest(
+                (px, py), (self.component_w, self.component_h)
+            )
 
-            # draw component image that is previewed on the grid
-            if (0 < px < self.screen_width and
-                0 < py < self.screen_height - 100 and
-                    not self.delete_mode):
-                component = self.get_component(x, y,
-                                               self.component_w,
-                                               self.component_h,
-                                               orient=self.orientation)  # change w/h later
-                component.draw(self.g)
+            self.render(mouse_x, mouse_y, px, py)
 
-            self.player.draw(self.g)
-            self.enemies.draw(self.g)
-            self.collidables.draw(self.g)
-            self.objective.draw(self.g)
-            self.fatal.draw(self.g)
-            pygame.draw.rect(self.g, (255, 255, 255),
-                             pygame.Rect(0, 600, 900, 100))
-            self.buttons.draw(self.g)
-
-            self.screen.blit(pygame.transform.scale(
-                self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.fps)
 
