@@ -57,7 +57,7 @@ class Game:
         self.objectives = data["objectives"]
 
     # kill a group (used to remove all the bullets)
-    def kill(self, group: pygame.sprite.Group):
+    def kill_group(self, group: pygame.sprite.Group):
         for sprite in group:
             sprite.kill()
 
