@@ -92,4 +92,11 @@ class Entity(pygame.sprite.Sprite):
         bar_pos = (pos[0] + 3, pos[1] + 3)
         bar_size = ((size[0] - 6) * (self.hp / self.max_hp), size[1] - 6)
         pygame.draw.rect(screen, (0, 255, 0), (*bar_pos, *bar_size))
-
+    
+    # return whether or not a point lies on the entity
+    def lies_on(self, x, y):
+        if (self.x <= x <= self.x + self.width and
+            self.y <= y <= self.y + self.height):
+            return True
+        else:
+            return False

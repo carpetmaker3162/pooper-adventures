@@ -15,7 +15,7 @@ def floor_to_nearest(coordinate: tuple, incr: tuple):
     return (incrx * math.floor(x / incrx),
             incry * math.floor(y / incry))
 
-paths = {
+image_paths = {
     "player": "assets/canpooper_right.png",
     "enemy": "assets/canpooper_left_angry.png",
     "collidable": "assets/crate.png",
@@ -79,8 +79,8 @@ class Editor:
         self.stopped = False
         self.mouse_pos = (0, 0)
         self.active_component_name = "player"
-        self.mouse = True # use mouse or keyboard
         self.event_ticker = 10
+        self.delete_mode = False
         
         self.component_w = 100
         self.component_h = 100
@@ -101,17 +101,17 @@ class Editor:
         # add buttons (i is for button positions)
         self.buttons = pygame.sprite.Group()
         for i, target in enumerate(self.data):
-            button = Button(image=paths[target],
+            button = Button(image=image_paths[target],
                             x = 25 + 100*i, y=625,
                             width=50, height=50,
                             id=target)
             self.buttons.add(button)
 
-        toggle_mode_button = Button(image="assets/mouse.png",
+        delete_button = Button(image="assets/trash.png",
                                     x = 625, y=625,
                                     width=50, height=50,
-                                    id="toggle")
-        self.buttons.add(toggle_mode_button)
+                                    id="delete")
+        self.buttons.add(delete_button)
 
         save_button = Button(image="assets/download.png",
                                     x = 725, y=625,
@@ -214,6 +214,8 @@ class Editor:
             elif keys[pygame.K_DOWN]:
                 self.component_w /= 2
                 self.component_h /= 2
+                self.component_w = int(self.component_w)
+                self.component_h = int(self.component_h)
 
         self.component_w = max(25, self.component_w)
         self.component_h = max(25, self.component_h)
@@ -228,19 +230,30 @@ class Editor:
                 if y > self.screen_height - 100:
                     for button in self.buttons:
                         if button.is_hovering(x, y):
-                            if button.id == "toggle":
-                                button.image = get_image(f"assets/mouse.png", 50, 50)
-                                self.mouse = not self.mouse
+                            if button.id == "delete":
+                                self.delete_mode = True
                             elif button.id == "save":
                                 self.save()
                             else:
+                                self.delete_mode = False
                                 self.change_component(button.id)
                 else:
                     gx, gy = floor_to_nearest((x, y), (self.component_w, self.component_h))
-                    component = self.get_component(gx, gy,
-                                                   self.component_w,
-                                                   self.component_h) # change w and h  
-                    self.set_component(component)
+                    if self.delete_mode:
+                        for e in self.enemies:
+                            if e.lies_on(x, y):
+                                e.kill()
+                        for c in self.collidables:
+                            if c.lies_on(x, y):
+                                c.kill()
+                        for f in self.fatal:
+                            if f.lies_on(x, y):
+                                f.kill()
+                    else:
+                        component = self.get_component(gx, gy,
+                                                       self.component_w,
+                                                       self.component_h) # change w and h  
+                        self.set_component(component)
 
 
     def loop(self):
@@ -255,14 +268,15 @@ class Editor:
                     rect = pygame.Rect(i, j, 100, 100)
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
-            if self.mouse:
-                px, py = self.mouse_pos
-                x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
+            px, py = self.mouse_pos
+            x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
 
             self.buttons.draw(self.g)
 
             # draw component image that is previewed on the grid
-            if 0 < px < self.screen_width and 0 < py < self.screen_height - 100:
+            if (0 < px < self.screen_width and
+                0 < py < self.screen_height - 100 and
+                not self.delete_mode):
                 component = self.get_component(x, y, 
                                                self.component_w, 
                                                self.component_h) # change w/h later
