@@ -330,5 +330,6 @@ if __name__ == "__main__":
         imported_level = sys.argv[1]
 
     editor = Editor(60, imported_level)
+    pygame.display.set_icon(get_image("assets/canpooper_right_angry.png", 200, 200))
     editor.loop()
     pygame.quit()

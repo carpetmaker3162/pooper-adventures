@@ -175,5 +175,6 @@ class Game:
 
 if __name__ == "__main__":
     window = Game(fps=60)
+    pygame.display.set_icon(get_image("assets/canpooper_right.png", 200, 200))
     window.loop()
     pygame.quit()
