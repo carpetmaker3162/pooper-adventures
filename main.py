@@ -28,7 +28,9 @@ class Game:
         self.screen_width = 900
         self.screen_height = 600
 
-        # self.screen is the actual screen. Everything should be drawn on self.g, because that screen will be resized and drawn onto the real screen
+        # self.screen is the actual screen. Everything should be drawn on
+        # self.g, because that screen will be resized and drawn onto the real
+        # screen
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("can pooper's adventures")
@@ -90,6 +92,10 @@ class Game:
     # move to next level and display
     def next_level(self):
         pygame.display.flip()
+
+        for bullet in self.bullets:
+            bullet.kill()
+
         self.g.fill((255, 255, 255))
 
         if self.level >= MAX_LEVEL:
@@ -155,6 +161,8 @@ class Game:
     # Executed every frame.
     def update(self):
         if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
+            for bullet in self.bullets:
+                bullet.kill()
             self.draw_level(self.level)
             self.player.die()
 
@@ -180,7 +188,7 @@ class Game:
             self.process_events()
             pygame.event.pump()
 
-            # Clear the screen before anything else. 
+            # Clear the screen before anything else.
             self.g.fill((255, 255, 255))
 
             self.update()
