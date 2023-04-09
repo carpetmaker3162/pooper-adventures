@@ -11,6 +11,9 @@ will (hopefully) be my first big project
 - space to shoot
 
 ## Editor Guide
+pass a file path as the first command-line argument to import a level into the editor.
+ex: `python3 editor.py levels/1.json`
+
 Controls:
 
 - H/L to decrease/increase width
