@@ -310,7 +310,15 @@ class Editor:
                 rect = pygame.Rect(i, j, 100, 100)
                 pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
-    def render(self, mouse_x, mouse_y, mouse_px, mouse_py):
+    def render(self):
+        mouse_px, mouse_py = self.mouse_pos
+        mouse_x, mouse_y = floor_to_nearest(
+            (mouse_px, mouse_py), (self.component_w, self.component_h)
+        )
+
+        # Clear the screen
+        self.g.fill((255, 255, 255))
+
         # draw component image that is previewed on the grid
         if (
             0 < mouse_px < self.screen_width and
@@ -352,14 +360,7 @@ class Editor:
         while not self.stopped:
             self.process_events()
 
-            self.g.fill((255, 255, 255))
-
-            px, py = self.mouse_pos
-            mouse_x, mouse_y = floor_to_nearest(
-                (px, py), (self.component_w, self.component_h)
-            )
-
-            self.render(mouse_x, mouse_y, px, py)
+            self.render()
 
             pygame.display.flip()
             self.clock.tick(self.fps)
