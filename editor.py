@@ -33,8 +33,14 @@ def serialize(component):
     y = component.y
     w = component.width
     h = component.height
+
     if isinstance(component, Player):
-        return {"spawn": f"{x},{y}", "size": f"{w},{h}", "facing": "right", "hp": 100}
+        return {
+            "spawn": f"{x},{y}",
+            "size": f"{w},{h}",
+            "facing": "right",
+            "hp": 100
+        }
     elif isinstance(component, Enemy):
         return {
             "spawn": f"{x},{y}", "size": f"{w},{h}",
@@ -44,7 +50,10 @@ def serialize(component):
             "firingRate": 1000
         }
     else:
-        return {"spawn": f"{x},{y}", "size": f"{w},{h}"}
+        return {
+            "spawn": f"{x},{y}",
+            "size": f"{w},{h}"
+        }
 
 
 class Button(pygame.sprite.Sprite):
