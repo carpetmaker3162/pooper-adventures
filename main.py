@@ -24,9 +24,10 @@ MAX_LEVEL = max(levels)
 
 
 class Game:
-    def __init__(self, fps) -> None:
+    def __init__(self, fps, enable_level_skipping = False) -> None:
         self.screen_width = 900
         self.screen_height = 600
+        self.enable_level_skipping = enable_level_skipping
 
         # self.screen is the actual screen. Everything should be drawn on
         # self.g, because that screen will be resized and drawn onto the real
@@ -88,6 +89,10 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
+        if keys[pygame.K_k]:
+            if self.event_ticker == 0 and self.enable_level_skipping:
+                self.event_ticker = 10
+                self.next_level()
 
     # move to next level and display
     def next_level(self):
@@ -198,7 +203,13 @@ class Game:
 
 
 if __name__ == "__main__":
-    window = Game(fps=60)
+    enable_level_skipping = False
+
+    for argument in sys.argv:
+        if argument == "--enable-level-skipping":
+            enable_level_skipping = True
+
+    window = Game(fps=60, enable_level_skipping=enable_level_skipping)
     pygame.display.set_icon(get_image("assets/canpooper_right.png", 200, 200))
     window.loop()
     pygame.quit()
