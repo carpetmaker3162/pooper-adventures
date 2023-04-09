@@ -3,19 +3,25 @@ import json
 
 from src.player import Player
 from src.entity import Entity
-from src.bullet import Bullet
 from src.enemy import Enemy
 from src.props import Crate, Objective, Lava
 
 import pygame
+
 
 def serialize(component):
     x = component.x
     y = component.y
     w = component.width
     h = component.height
+
     if isinstance(component, Player):
-        return { "spawn": f"{x},{y}", "size": f"{w},{h}", "facing": "right", "hp": 100 }
+        return {
+            "spawn": f"{x},{y}",
+            "size": f"{w},{h}",
+            "facing": "right",
+            "hp": 100
+        }
     elif isinstance(component, Enemy):
         return {
             "spawn": f"{x},{y}", "size": f"{w},{h}",
@@ -25,18 +31,23 @@ def serialize(component):
             "firingRate": 1000
         }
     else:
-        return { "spawn": f"{x},{y}", "size": f"{w},{h}" }
+        return {
+            "spawn": f"{x},{y}",
+            "size": f"{w},{h}"
+        }
+
 
 def get_level(lvl: int):
     fp = f"levels/{lvl}.json"
     if not os.path.exists(fp):
         raise FileNotFoundError(f"Level {lvl} does not exist")
-    
+
     with open(fp, "r") as f:
         raw = f.read()
 
     data = json.loads(raw)
     return data
+
 
 def unwrap(d, key):
     if isinstance(d[key], int):
@@ -46,18 +57,19 @@ def unwrap(d, key):
     else:
         return d[key]
 
+
 def display(g: pygame.surface.Surface, data):
     p = data["player"]
     e = data["enemy"]
     c = data["collidable"]
     o = data["objective"]
     f = data["fatal"]
-    
+
     x, y = unwrap(p, "spawn")
     w, h = unwrap(p, "size")
     hp = unwrap(p, "hp")
     player = Player(x, y, w, h, hp)
-    
+
     enemies = pygame.sprite.Group()
     for enemy in e:
         x, y = unwrap(enemy, "spawn")
@@ -67,8 +79,11 @@ def display(g: pygame.surface.Surface, data):
         firingdamage = unwrap(enemy, "firingDamage")
         firingrate = unwrap(enemy, "firingRate")
 
-        enemy = Enemy(f"assets/canpooper_{dir}_angry.png",
-        x, y, w, h, hp, firingdamage, facing=dir, firing_cooldown=firingrate)
+        enemy = Enemy(
+            f"assets/canpooper_{dir}_angry.png",
+            x, y, w, h, hp, firingdamage,
+            facing=dir, firing_cooldown=firingrate
+        )
         enemies.add(enemy)
 
     collidables = pygame.sprite.Group()
@@ -78,7 +93,7 @@ def display(g: pygame.surface.Surface, data):
 
         collidable = Crate(x, y, w, h)
         collidables.add(collidable)
-    
+
     fatalobjs = pygame.sprite.Group()
     for fatal in f:
         x, y = unwrap(fatal, "spawn")
@@ -86,19 +101,19 @@ def display(g: pygame.surface.Surface, data):
 
         lava = Lava(x, y, w, h)
         fatalobjs.add(lava)
-    
+
     objectives = pygame.sprite.Group()
     x, y = unwrap(o, "spawn")
     w, h = unwrap(o, "size")
     objective = Objective(x, y, w, h)
     objectives.add(objective)
-    
+
     player.draw(g)
     enemies.draw(g)
     collidables.draw(g)
     fatalobjs.draw(g)
     objectives.draw(g)
-    
+
     new = {
         "player": player,
         "enemies": enemies,

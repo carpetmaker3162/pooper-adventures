@@ -11,11 +11,13 @@ from parser import display, serialize
 import pygame
 pygame.init()
 
+
 def floor_to_nearest(coordinate: tuple, incr: tuple):
     x, y = coordinate
     incrx, incry = incr
     return (incrx * math.floor(x / incrx),
             incry * math.floor(y / incry))
+
 
 image_paths = {
     "player": "assets/canpooper_right.png",
@@ -25,21 +27,22 @@ image_paths = {
     "fatal": "assets/lava.png"
 }
 
+
 class Button(pygame.sprite.Sprite):
     def __init__(self,
-            image="assets/none.png",
-            x=0,
-            y=0,
-            width=100,
-            height=100,
-            text="",
-            id=0):
+                 image="assets/none.png",
+                 x=0,
+                 y=0,
+                 width=100,
+                 height=100,
+                 text="",
+                 id=0):
         super().__init__()
 
         self.image = get_image(image, width, height)
         self.rect = self.image.get_rect()
         self.rect.center = (x + width/2, y + height/2)
-        
+
         self.x = x
         self.y = y
         self.width = width
@@ -49,28 +52,30 @@ class Button(pygame.sprite.Sprite):
 
     def is_hovering(self, mousex, mousey):
         if (self.x < mousex < self.x + self.width and
-            self.y < mousey < self.y + self.height):
+                self.y < mousey < self.y + self.height):
             return True
         else:
             return False
+
 
 class Editor:
     def __init__(self, fps, imported_level=None) -> None:
         self.screen_width = 900
         self.screen_height = 700
         self.fps = fps
-        
+
         self.stopped = False
         self.mouse_pos = (0, 0)
         self.active_component_name = "player"
         self.event_ticker = 10
         self.delete_mode = False
         self.orientation = "left"
-        
+
         self.component_w = 100
         self.component_h = 100
 
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(
+            (self.screen_width, self.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("level editor")
         self.g = self.screen.copy()
         self.clock = pygame.time.Clock()
@@ -82,7 +87,7 @@ class Editor:
             "objective": {},
             "fatal": []
         }
-        
+
         # display imported level
         if imported_level is not None:
             if not os.path.exists(imported_level):
@@ -107,37 +112,37 @@ class Editor:
         self.buttons = pygame.sprite.Group()
         for i, target in enumerate(self.data):
             button = Button(image=image_paths[target],
-                            x = 25 + 100*i, y=625,
+                            x=25 + 100*i, y=625,
                             width=50, height=50,
                             id=target)
             self.buttons.add(button)
 
         reflect_button = Button(image="assets/reflection.png",
-                                    x=625, y=625,
-                                    width=50, height=50,
-                                    id="reflect")
+                                x=625, y=625,
+                                width=50, height=50,
+                                id="reflect")
         self.buttons.add(reflect_button)
 
         delete_button = Button(image="assets/trash.png",
-                                    x=725, y=625,
-                                    width=50, height=50,
-                                    id="delete")
+                               x=725, y=625,
+                               width=50, height=50,
+                               id="delete")
         self.buttons.add(delete_button)
 
         save_button = Button(image="assets/download.png",
-                                    x=825, y=625,
-                                    width=50, height=50,
-                                    id="save")
+                             x=825, y=625,
+                             width=50, height=50,
+                             id="save")
         self.buttons.add(save_button)
 
     def get_component(self, x, y, w, h, **kwargs):
         match self.active_component_name:
             case "player":
                 return Player(x, y, w, h, hp=100)
-            case "enemy": # change once enemy types are added
+            case "enemy":  # change once enemy types are added
                 direction = kwargs.get("orient", "left")
-                return Enemy(f"assets/canpooper_{direction}_angry.png", 
-                             x, y, w, h, bullet_damage=25, 
+                return Enemy(f"assets/canpooper_{direction}_angry.png",
+                             x, y, w, h, bullet_damage=25,
                              facing=direction)
             case "collidable":
                 return Crate(x, y, w, h)
@@ -176,7 +181,7 @@ class Editor:
             i += 1
 
         print(f"Saving level at '{fp}'")
-        
+
         self.data["player"] = serialize(self.player)
 
         self.data["enemy"] = []
@@ -188,11 +193,11 @@ class Editor:
             self.data["collidable"].append(serialize(collidable))
 
         self.data["objective"] = serialize(self.objective)
-        
+
         self.data["fatal"] = []
         for fatal in self.fatal:
             self.data["fatal"].append(serialize(fatal))
-        
+
         assert not os.path.exists(fp)
 
         with open(fp, "w") as f:
@@ -200,9 +205,9 @@ class Editor:
 
         print(f"Saved at '{fp}'")
 
-    def process_events(self):
+    def process_key_events(self):
         keys = pygame.key.get_pressed()
-        
+
         # amount changed by arrow key presses
         if self.event_ticker > 0:
             self.event_ticker -= 1
@@ -228,83 +233,119 @@ class Editor:
         self.component_w = max(25, self.component_w)
         self.component_h = max(25, self.component_h)
 
+    def process_mouse_events(self):
+        x, y = self.mouse_pos
+        # Checks whether the mouse clicked within the toolbar
+        # or not.
+        if y > self.screen_height - 100:
+            for button in self.buttons:
+                if button.is_hovering(x, y):
+                    if button.id == "delete":
+                        self.delete_mode = True
+                    elif button.id == "save":
+                        self.save()
+                    elif button.id == "reflect":
+                        self.orientation = ("left" if
+                                            self.orientation == "right" else
+                                            "right")
+                    else:
+                        self.delete_mode = False
+                        self.change_component(button.id)
+        else:
+            gx, gy = floor_to_nearest(
+                (x, y), (self.component_w, self.component_h))
+            if self.delete_mode:
+                for e in self.enemies:
+                    if e.lies_on(x, y):
+                        e.kill()
+                for c in self.collidables:
+                    if c.lies_on(x, y):
+                        c.kill()
+                for f in self.fatal:
+                    if f.lies_on(x, y):
+                        f.kill()
+            else:
+                component = self.get_component(gx, gy,
+                                               self.component_w,
+                                               self.component_h,
+                                               orient=self.orientation)
+                self.set_component(component)
+
+    def process_events(self):
+        pygame.event.pump()
+        self.mouse_pos = pygame.mouse.get_pos()
+
+        self.process_key_events()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.stopped = True
                 return
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = self.mouse_pos
-                if y > self.screen_height - 100:
-                    for button in self.buttons:
-                        if button.is_hovering(x, y):
-                            if button.id == "delete":
-                                self.delete_mode = True
-                            elif button.id == "save":
-                                self.save()
-                            elif button.id == "reflect":
-                                self.orientation = ("left" if 
-                                    self.orientation == "right" else 
-                                    "right")
-                            else:
-                                self.delete_mode = False
-                                self.change_component(button.id)
-                else:
-                    gx, gy = floor_to_nearest((x, y), (self.component_w, self.component_h))
-                    if self.delete_mode:
-                        for e in self.enemies:
-                            if e.lies_on(x, y):
-                                e.kill()
-                        for c in self.collidables:
-                            if c.lies_on(x, y):
-                                c.kill()
-                        for f in self.fatal:
-                            if f.lies_on(x, y):
-                                f.kill()
-                    else:
-                        component = self.get_component(gx, gy,
-                                                       self.component_w,
-                                                       self.component_h,
-                                                       orient=self.orientation)
-                        self.set_component(component)
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.process_mouse_events()
+
+    def draw_grid(self):
+        for i in range(0, self.screen_width, 100):
+            for j in range(0, self.screen_height - 100, 100):
+                rect = pygame.Rect(i, j, 100, 100)
+                pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
+
+    def render(self):
+        mouse_px, mouse_py = self.mouse_pos
+        mouse_x, mouse_y = floor_to_nearest(
+            (mouse_px, mouse_py), (self.component_w, self.component_h)
+        )
+
+        # Clear the screen
+        self.g.fill((255, 255, 255))
+
+        # draw component image that is previewed on the grid
+        if (
+            0 < mouse_px < self.screen_width and
+            0 < mouse_py < self.screen_height - 100 and
+            not self.delete_mode
+        ):
+            component = self.get_component(
+                mouse_x, mouse_y,
+                self.component_w,
+                self.component_h,
+                orient=self.orientation
+            )  # change w/h later
+
+            component.draw(self.g)
+
+        self.draw_grid()
+
+        pygame.draw.rect(
+            self.g,
+            (255, 255, 255),
+            pygame.Rect(0, 600, 900, 100)
+        )
+
+        self.player.draw(self.g)
+        self.enemies.draw(self.g)
+        self.collidables.draw(self.g)
+        self.objective.draw(self.g)
+        self.fatal.draw(self.g)
+        self.buttons.draw(self.g)
+
+        self.screen.blit(
+            pygame.transform.scale(
+                self.g, self.screen.get_rect().size
+            ),
+            (0, 0)
+        )
 
     def loop(self):
         while not self.stopped:
-            pygame.event.pump()
-            self.mouse_pos = pygame.mouse.get_pos()
             self.process_events()
 
-            self.g.fill((255, 255, 255))
-            for i in range(0, self.screen_width, 100):
-                for j in range(0, self.screen_height - 100, 100):
-                    rect = pygame.Rect(i, j, 100, 100)
-                    pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
+            self.render()
 
-            px, py = self.mouse_pos
-            x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
-
-            # draw component image that is previewed on the grid
-            if (0 < px < self.screen_width and
-                0 < py < self.screen_height - 100 and
-                not self.delete_mode):
-                component = self.get_component(x, y, 
-                                               self.component_w, 
-                                               self.component_h,
-                                               orient=self.orientation) # change w/h later
-                component.draw(self.g)
-
-            self.player.draw(self.g)
-            self.enemies.draw(self.g)
-            self.collidables.draw(self.g)
-            self.objective.draw(self.g)
-            self.fatal.draw(self.g)
-            pygame.draw.rect(self.g, (255, 255, 255), pygame.Rect(0, 600, 900, 100))
-            self.buttons.draw(self.g)
-
-            self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.fps)
+
 
 if __name__ == "__main__":
     imported_level = None
@@ -312,6 +353,7 @@ if __name__ == "__main__":
         imported_level = sys.argv[1]
 
     editor = Editor(60, imported_level)
-    pygame.display.set_icon(get_image("assets/canpooper_right_angry.png", 200, 200))
+    pygame.display.set_icon(
+        get_image("assets/canpooper_right_angry.png", 200, 200))
     editor.loop()
     pygame.quit()
