@@ -19,7 +19,7 @@ def floor_to_nearest(coordinate: tuple, incr: tuple):
 
 image_paths = {
     "player": "assets/canpooper_right.png",
-    "enemy": "assets/canpooper_left_angry.png",
+    "enemy": "assets/canpooper_right_angry.png",
     "collidable": "assets/crate.png",
     "objective": "assets/burger.png",
     "fatal": "assets/lava.png"
@@ -35,7 +35,7 @@ def serialize(component):
     elif isinstance(component, Enemy):
         return {
             "spawn": f"{x},{y}", "size": f"{w},{h}",
-            "facing": "left",
+            "facing": component.facing,
             "hp": 50,
             "firingDamage": 25,
             "firingRate": 1000
@@ -83,6 +83,7 @@ class Editor:
         self.active_component_name = "player"
         self.event_ticker = 10
         self.delete_mode = False
+        self.orientation = "left"
         
         self.component_w = 100
         self.component_h = 100
@@ -130,23 +131,32 @@ class Editor:
             self.buttons.add(button)
 
         delete_button = Button(image="assets/trash.png",
-                                    x = 625, y=625,
+                                    x=625, y=625,
                                     width=50, height=50,
                                     id="delete")
         self.buttons.add(delete_button)
 
         save_button = Button(image="assets/download.png",
-                                    x = 725, y=625,
+                                    x=725, y=625,
                                     width=50, height=50,
                                     id="save")
         self.buttons.add(save_button)
 
-    def get_component(self, x, y, w, h):
+        reflect_button = Button(image="assets/reflection.png",
+                                    x=825, y=625,
+                                    width=50, height=50,
+                                    id="reflect")
+        self.buttons.add(reflect_button)
+
+    def get_component(self, x, y, w, h, **kwargs):
         match self.active_component_name:
             case "player":
                 return Player(x, y, w, h, hp=100)
             case "enemy": # change once enemy types are added
-                return Enemy("assets/canpooper_left_angry.png", x, y, w, h, bullet_damage=25)
+                direction = kwargs.get("orient", "left")
+                return Enemy(f"assets/canpooper_{direction}_angry.png", 
+                             x, y, w, h, bullet_damage=25, 
+                             facing=direction)
             case "collidable":
                 return Crate(x, y, w, h)
             case "objective":
@@ -250,6 +260,10 @@ class Editor:
                                 self.delete_mode = True
                             elif button.id == "save":
                                 self.save()
+                            elif button.id == "reflect":
+                                self.orientation = ("left" if 
+                                    self.orientation == "right" else 
+                                    "right")
                             else:
                                 self.delete_mode = False
                                 self.change_component(button.id)
@@ -268,7 +282,8 @@ class Editor:
                     else:
                         component = self.get_component(gx, gy,
                                                        self.component_w,
-                                                       self.component_h) # change w and h  
+                                                       self.component_h,
+                                                       orient=self.orientation)
                         self.set_component(component)
 
 
@@ -293,7 +308,8 @@ class Editor:
                 not self.delete_mode):
                 component = self.get_component(x, y, 
                                                self.component_w, 
-                                               self.component_h) # change w/h later
+                                               self.component_h,
+                                               orient=self.orientation) # change w/h later
                 component.draw(self.g)
 
             self.player.draw(self.g)

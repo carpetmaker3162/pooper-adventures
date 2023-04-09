@@ -31,7 +31,7 @@ class Enemy(Entity):
 
         self.bullets = pygame.sprite.Group()
         self.last_bullet_fired = -float("inf")
-        
+        self.facing = facing
     
     def update(self, collidables, fatal, bullets, screen):
         super().update(collidables, fatal, bullets, screen)
