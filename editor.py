@@ -9,11 +9,13 @@ from utils import get_image
 import pygame
 pygame.init()
 
+
 def floor_to_nearest(coordinate: tuple, incr: tuple):
     x, y = coordinate
     incrx, incry = incr
     return (incrx * math.floor(x / incrx),
             incry * math.floor(y / incry))
+
 
 image_paths = {
     "player": "assets/canpooper_right.png",
@@ -23,13 +25,14 @@ image_paths = {
     "fatal": "assets/lava.png"
 }
 
+
 def serialize(component):
     x = component.x
     y = component.y
     w = component.width
     h = component.height
     if isinstance(component, Player):
-        return { "spawn": f"{x},{y}", "size": f"{w},{h}", "facing": "right", "hp": 100 }
+        return {"spawn": f"{x},{y}", "size": f"{w},{h}", "facing": "right", "hp": 100}
     elif isinstance(component, Enemy):
         return {
             "spawn": f"{x},{y}", "size": f"{w},{h}",
@@ -39,23 +42,24 @@ def serialize(component):
             "firingRate": 1000
         }
     else:
-        return { "spawn": f"{x},{y}", "size": f"{w},{h}" }
+        return {"spawn": f"{x},{y}", "size": f"{w},{h}"}
+
 
 class Button(pygame.sprite.Sprite):
     def __init__(self,
-            image="assets/none.png",
-            x=0,
-            y=0,
-            width=100,
-            height=100,
-            text="",
-            id=0):
+                 image="assets/none.png",
+                 x=0,
+                 y=0,
+                 width=100,
+                 height=100,
+                 text="",
+                 id=0):
         super().__init__()
 
         self.image = get_image(image, width, height)
         self.rect = self.image.get_rect()
         self.rect.center = (x + width/2, y + height/2)
-        
+
         self.x = x
         self.y = y
         self.width = width
@@ -65,27 +69,29 @@ class Button(pygame.sprite.Sprite):
 
     def is_hovering(self, mousex, mousey):
         if (self.x < mousex < self.x + self.width and
-            self.y < mousey < self.y + self.height):
+                self.y < mousey < self.y + self.height):
             return True
         else:
             return False
+
 
 class Editor:
     def __init__(self, fps) -> None:
         self.screen_width = 900
         self.screen_height = 700
         self.fps = fps
-        
+
         self.stopped = False
         self.mouse_pos = (0, 0)
         self.active_component_name = "player"
         self.event_ticker = 10
         self.delete_mode = False
-        
+
         self.component_w = 100
         self.component_h = 100
 
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(
+            (self.screen_width, self.screen_height), pygame.RESIZABLE)
         pygame.display.set_caption("level editor")
         self.g = self.screen.copy()
         self.clock = pygame.time.Clock()
@@ -102,21 +108,21 @@ class Editor:
         self.buttons = pygame.sprite.Group()
         for i, target in enumerate(self.data):
             button = Button(image=image_paths[target],
-                            x = 25 + 100*i, y=625,
+                            x=25 + 100*i, y=625,
                             width=50, height=50,
                             id=target)
             self.buttons.add(button)
 
         delete_button = Button(image="assets/trash.png",
-                                    x = 625, y=625,
-                                    width=50, height=50,
-                                    id="delete")
+                               x=625, y=625,
+                               width=50, height=50,
+                               id="delete")
         self.buttons.add(delete_button)
 
         save_button = Button(image="assets/download.png",
-                                    x = 725, y=625,
-                                    width=50, height=50,
-                                    id="save")
+                             x=725, y=625,
+                             width=50, height=50,
+                             id="save")
         self.buttons.add(save_button)
 
         self.player = Player(-1000, -1000)
@@ -129,7 +135,7 @@ class Editor:
         match self.active_component_name:
             case "player":
                 return Player(x, y, w, h, hp=100)
-            case "enemy": # change once enemy types are added
+            case "enemy":  # change once enemy types are added
                 return Enemy("assets/canpooper_left_angry.png", x, y, w, h, bullet_damage=25)
             case "collidable":
                 return Crate(x, y, w, h)
@@ -168,7 +174,7 @@ class Editor:
             i += 1
 
         print(f"Saving level at '{fp}'")
-        
+
         self.data["player"] = serialize(self.player)
 
         self.data["enemy"] = []
@@ -180,11 +186,11 @@ class Editor:
             self.data["collidable"].append(serialize(collidable))
 
         self.data["objective"] = serialize(self.objective)
-        
+
         self.data["fatal"] = []
         for fatal in self.fatal:
             self.data["fatal"].append(serialize(fatal))
-        
+
         assert not os.path.exists(fp)
 
         with open(fp, "w") as f:
@@ -194,7 +200,7 @@ class Editor:
 
     def process_events(self):
         keys = pygame.key.get_pressed()
-        
+
         # amount changed by arrow key presses
         if self.event_ticker > 0:
             self.event_ticker -= 1
@@ -224,7 +230,7 @@ class Editor:
             if event.type == pygame.QUIT:
                 self.stopped = True
                 return
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = self.mouse_pos
                 if y > self.screen_height - 100:
@@ -238,7 +244,8 @@ class Editor:
                                 self.delete_mode = False
                                 self.change_component(button.id)
                 else:
-                    gx, gy = floor_to_nearest((x, y), (self.component_w, self.component_h))
+                    gx, gy = floor_to_nearest(
+                        (x, y), (self.component_w, self.component_h))
                     if self.delete_mode:
                         for e in self.enemies:
                             if e.lies_on(x, y):
@@ -252,9 +259,8 @@ class Editor:
                     else:
                         component = self.get_component(gx, gy,
                                                        self.component_w,
-                                                       self.component_h) # change w and h  
+                                                       self.component_h)  # change w and h
                         self.set_component(component)
-
 
     def loop(self):
         while not self.stopped:
@@ -269,17 +275,18 @@ class Editor:
                     pygame.draw.rect(self.g, (230, 230, 230), rect, 1)
 
             px, py = self.mouse_pos
-            x, y = floor_to_nearest((px, py), (self.component_w, self.component_h))
+            x, y = floor_to_nearest(
+                (px, py), (self.component_w, self.component_h))
 
             self.buttons.draw(self.g)
 
             # draw component image that is previewed on the grid
             if (0 < px < self.screen_width and
                 0 < py < self.screen_height - 100 and
-                not self.delete_mode):
-                component = self.get_component(x, y, 
-                                               self.component_w, 
-                                               self.component_h) # change w/h later
+                    not self.delete_mode):
+                component = self.get_component(x, y,
+                                               self.component_w,
+                                               self.component_h)  # change w/h later
                 component.draw(self.g)
 
             self.player.draw(self.g)
@@ -288,9 +295,11 @@ class Editor:
             self.objective.draw(self.g)
             self.fatal.draw(self.g)
 
-            self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
+            self.screen.blit(pygame.transform.scale(
+                self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.fps)
+
 
 if __name__ == "__main__":
     editor = Editor(fps=60)
