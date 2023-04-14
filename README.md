@@ -11,6 +11,9 @@ will (hopefully) be my first big project
 - space to shoot
 
 ## Editor Guide
+pass a file path as the first command-line argument to import a level into the editor.  
+ex: `python3 editor.py levels/1.json`
+
 Controls:
 
 - H/L to decrease/increase width
@@ -24,5 +27,6 @@ Control Panel:
 - Click on each icon to add different types of sprites
 - Click on the trash can to enter "delete mode" (sprites you click on will be deleted)
 - Click on the download icon to save a level to the `/levels` folder (it will look for the first available level number to use)
+- Click on the 2 arrows icon to change the orientation of enemies (this only affects enemy sprites)
 
 note that you can only place 1 player and 1 objective for obvious reasons (you can't delete a player or objective with "delete mode" either, because you can just re-place them)

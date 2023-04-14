@@ -10,7 +10,7 @@ class Player(Entity):
             height=100,
             hp=100):
 
-        super().__init__("assets/canpooper_left.png", x, y, width, height, hp, None, 1)
+        super().__init__("assets/canpooper_right.png", x, y, width, height, hp, None, 1)
 
         # initing stuff
         self.left_image = get_image(

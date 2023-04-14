@@ -40,3 +40,15 @@ class Bullet(Entity):
         if pygame.time.get_ticks() - self.life_begin > self.lifetime \
             or (self.x > self.screen_width + 100 or self.x < -100) or self.y > (self.screen_height + 100 or self.y < -100):
             self.kill()
+
+    def move(self, x, y, collidables):
+        dx = x
+        dy = y
+
+        if self.colliding_at(dx, dy, collidables):
+            self.kill()
+
+        self.y += dy
+        self.x += dx
+
+        self.rect.move_ip((dx, dy))
