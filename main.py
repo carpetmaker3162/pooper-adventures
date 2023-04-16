@@ -1,7 +1,7 @@
 import os
 import sys
 
-from utils import decrease, increase, is_positive, get_image, sign
+from utils import get_image
 from parser import get_level, display
 from src.bullet import Bullet
 
@@ -24,7 +24,7 @@ MAX_LEVEL = max(levels)
 
 
 class Game:
-    def __init__(self, fps, enable_level_skipping = False) -> None:
+    def __init__(self, fps, enable_level_skipping=False) -> None:
         self.screen_width = 900
         self.screen_height = 600
         self.enable_level_skipping = enable_level_skipping
@@ -78,9 +78,15 @@ class Game:
 
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
-            if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
+            if (
+                current_time - self.player.last_bullet_fired >
+                self.player.firing_cooldown
+            ):
                 self.bullets.add(
-                    Bullet(self.player.x, self.player.y, 1, 15, self.player.direction, 3000, 33))
+                    Bullet(
+                        self.player.x, self.player.y,
+                        1, 15, self.player.direction, 3000, 33
+                    ))
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -107,7 +113,7 @@ class Game:
             self.level = 1
             self.screen.fill((255, 255, 255))
             w = LARGE_TEXT.render(
-                f"you win lets goooooooooooo", False, (0, 0, 0))
+                "you win lets goooooooooooo", False, (0, 0, 0))
             self.screen.blit(w, (10, 100))
             pygame.display.flip()
             self.player.respawn(2000)
@@ -165,7 +171,11 @@ class Game:
     # Updates the game state, and processes input.
     # Executed every frame.
     def update(self):
-        if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
+        if (
+                (pygame.sprite.spritecollideany(self.player, self.fatal) or
+                 self.player.y > 1000 or self.player.hp <= 0)
+                and not self.player.invulnerable
+        ):
             for bullet in self.bullets:
                 bullet.kill()
             self.draw_level(self.level)
@@ -176,7 +186,11 @@ class Game:
             return
 
         for bullet in self.bullets:
-            if bullet.x > self.screen_width or bullet.x < 0 or bullet.y > self.screen_height or bullet.y < 0:
+            if (
+                bullet.x > self.screen_width
+                or bullet.x < 0
+                or bullet.y > self.screen_height or bullet.y < 0
+            ):
                 bullet.kill()
             bullet.move(bullet.x_speed, bullet.y_speed, self.collidables)
             bullet.update()
