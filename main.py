@@ -26,7 +26,6 @@ class Game:
     def __init__(self, fps, enable_level_skipping=False) -> None:
         self.screen_width = 900
         self.screen_height = 600
-<<<<<<< HEAD
         self.enable_level_skipping = enable_level_skipping
 
         # self.screen is the actual screen. Everything should be drawn on
@@ -34,11 +33,6 @@ class Game:
         # screen
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height), pygame.RESIZABLE)
-=======
-        
-        # self.screen is the actual screen. Everything should be drawn on self.g, because that screen will be resized and drawn onto the real screen
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
->>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
         pygame.display.set_caption("can pooper's adventures")
         self.g = self.screen.copy()
 
@@ -78,7 +72,6 @@ class Game:
         
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
-<<<<<<< HEAD
             if (
                 current_time - self.player.last_bullet_fired >
                 self.player.firing_cooldown
@@ -88,10 +81,6 @@ class Game:
                         self.player.x, self.player.y,
                         1, 15, self.player.direction, 3000, 33
                     ))
-=======
-            if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
-                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.direction, 3000, 33))
->>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -154,7 +143,6 @@ class Game:
         self.g.blit(entitycount, (10, 85))
         self.g.blit(deaths, (10, 100))
 
-<<<<<<< HEAD
     # Renders everything onto the screen.
     # Executed everything frame.
     def render(self):
@@ -205,8 +193,6 @@ class Game:
                 self.bullets.add(bullet)
 
         self.player.update(self.collidables, self.fatal, self.bullets, self.g)
-=======
->>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
 
     def loop(self):
         while not self.stopped:
