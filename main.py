@@ -22,11 +22,11 @@ for filename in level_directory:
 
 MAX_LEVEL = max(levels)
 
-
 class Game:
     def __init__(self, fps, enable_level_skipping=False) -> None:
         self.screen_width = 900
         self.screen_height = 600
+<<<<<<< HEAD
         self.enable_level_skipping = enable_level_skipping
 
         # self.screen is the actual screen. Everything should be drawn on
@@ -34,6 +34,11 @@ class Game:
         # screen
         self.screen = pygame.display.set_mode(
             (self.screen_width, self.screen_height), pygame.RESIZABLE)
+=======
+        
+        # self.screen is the actual screen. Everything should be drawn on self.g, because that screen will be resized and drawn onto the real screen
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+>>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
         pygame.display.set_caption("can pooper's adventures")
         self.g = self.screen.copy()
 
@@ -47,7 +52,7 @@ class Game:
         self.event_ticker = 0
 
         self.bullets = pygame.sprite.Group()
-
+    
     # to be called when an entire new level has to be loaded
     def draw_level(self, id):
         layout = get_level(id)
@@ -59,25 +64,21 @@ class Game:
         self.fatal = data["fatal"]
         self.objectives = data["objectives"]
 
-    # kill a group (used to remove all the bullets)
-    def kill_group(self, group: pygame.sprite.Group):
-        for sprite in group:
-            sprite.kill()
-
     # process keyboard events
     def process_events(self):
         keys = pygame.key.get_pressed()
 
         if self.event_ticker > 0:
             self.event_ticker -= 1
-
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.stopped = True
                 return
-
+        
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
+<<<<<<< HEAD
             if (
                 current_time - self.player.last_bullet_fired >
                 self.player.firing_cooldown
@@ -87,6 +88,10 @@ class Game:
                         self.player.x, self.player.y,
                         1, 15, self.player.direction, 3000, 33
                     ))
+=======
+            if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
+                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.direction, 3000, 33))
+>>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -106,7 +111,7 @@ class Game:
 
         for bullet in self.bullets:
             bullet.kill()
-
+        
         self.g.fill((255, 255, 255))
 
         if self.level >= MAX_LEVEL:
@@ -124,9 +129,7 @@ class Game:
         self.draw_level(self.level)
 
     def display_game_info(self):
-        self.entitycount = 1 + \
-            len(self.collidables) + len(self.fatal) + \
-            len(self.objectives) + len(self.bullets)
+        self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
 
         coordinates = ARIAL.render(
             f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
@@ -151,6 +154,7 @@ class Game:
         self.g.blit(entitycount, (10, 85))
         self.g.blit(deaths, (10, 100))
 
+<<<<<<< HEAD
     # Renders everything onto the screen.
     # Executed everything frame.
     def render(self):
@@ -201,18 +205,51 @@ class Game:
                 self.bullets.add(bullet)
 
         self.player.update(self.collidables, self.fatal, self.bullets, self.g)
+=======
+>>>>>>> e3d8dbeba3e493c62f2d187fd8a40e102f8d8ac8
 
     def loop(self):
         while not self.stopped:
             self.process_events()
             pygame.event.pump()
 
-            # Clear the screen before anything else.
             self.g.fill((255, 255, 255))
 
-            self.update()
-            self.render()
+            if (pygame.sprite.spritecollideany(self.player, self.fatal) or self.player.y > 1000 or self.player.hp <= 0) and not self.player.invulnerable:
+                for bullet in self.bullets:
+                    bullet.kill()
+                self.draw_level(self.level)
+                self.player.die()
 
+            if self.player.has_reached_objective(self.objectives):
+                self.next_level()
+                continue
+            
+            for bullet in self.bullets:
+                if bullet.x > self.screen_width or bullet.x < 0 or bullet.y > self.screen_height or bullet.y < 0:
+                    bullet.kill()
+                bullet.move(bullet.x_speed, bullet.y_speed, self.collidables)
+                bullet.update()
+            
+            for enemy in self.enemies:
+                enemy.update(self.collidables, self.fatal, self.bullets, self.g)
+                for bullet in enemy.bullets:
+                    self.bullets.add(bullet)
+
+            self.player.update(self.collidables, self.fatal, self.bullets, self.g)
+
+            self.player.draw(self.g)
+            self.collidables.draw(self.g)
+            self.fatal.draw(self.g)
+            self.objectives.draw(self.g)
+            self.bullets.draw(self.g)
+            self.enemies.draw(self.g)
+
+            if self.show_info:
+                self.display_game_info()
+            
+            self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
+            pygame.display.flip()
             self.clock.tick(self.framecap)
 
 
