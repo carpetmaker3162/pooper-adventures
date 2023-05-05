@@ -49,10 +49,10 @@ class Game:
         self.g.fill((255, 255, 255))
         data = display(self.g, layout)
         self.player = data["player"]
-        self.enemies = data["enemies"]
-        self.collidables = data["collidables"]
+        self.enemies = data["enemy"]
+        self.collidables = data["collidable"]
         self.fatal = data["fatal"]
-        self.objectives = data["objectives"]
+        self.objective = data["objective"]
 
     # process keyboard events
     def process_events(self):
@@ -69,7 +69,7 @@ class Game:
         if keys[pygame.K_SPACE]:
             current_time = pygame.time.get_ticks()
             if current_time - self.player.last_bullet_fired > self.player.firing_cooldown:
-                self.bullets.add(Bullet(self.player.x, self.player.y, 1, 15, self.player.direction, 3000, 33))
+                self.bullets.add(Bullet((self.player.x, self.player.y), 1, 15, self.player.direction, 3000, 33))
                 self.player.last_bullet_fired = current_time
             else:
                 return
@@ -103,7 +103,7 @@ class Game:
         self.draw_level(self.level)
 
     def display_game_info(self):
-        self.entitycount = 1 + len(self.collidables) + len(self.fatal) + len(self.objectives) + len(self.bullets)
+        self.entitycount = 2 + len(self.collidables) + len(self.fatal) + len(self.bullets)
 
         coordinates = ARIAL.render(
             f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
@@ -142,7 +142,7 @@ class Game:
                 self.draw_level(self.level)
                 self.player.die()
 
-            if self.player.has_reached_objective(self.objectives):
+            if self.player.has_reached_objective(self.objective):
                 self.next_level()
                 continue
             
@@ -162,7 +162,7 @@ class Game:
             self.player.draw(self.g)
             self.collidables.draw(self.g)
             self.fatal.draw(self.g)
-            self.objectives.draw(self.g)
+            self.objective.draw(self.g)
             self.bullets.draw(self.g)
             self.enemies.draw(self.g)
 

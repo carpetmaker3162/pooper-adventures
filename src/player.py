@@ -4,13 +4,13 @@ import pygame
 
 class Player(Entity):
     def __init__(self,
-            x,
-            y,
-            width=100,
-            height=100,
+            spawn=(0, 0),
+            size=(100, 100),
             hp=100):
-
-        super().__init__("assets/canpooper_right.png", x, y, width, height, hp, None, 1)
+        
+        width, height = size
+        x, y = spawn
+        super().__init__("assets/canpooper_right.png", spawn, size, hp, None, 1)
 
         # initing stuff
         self.left_image = get_image(
@@ -64,8 +64,8 @@ class Player(Entity):
                 return True
         return False
 
-    def has_reached_objective(self, objectives):
-        return pygame.sprite.spritecollideany(self, objectives) is not None
+    def has_reached_objective(self, objective):
+        return pygame.sprite.collide_rect(self, objective)
 
     def update(self, collidables, fatal, bullets, screen):
         super().update(collidables, fatal, bullets, screen)

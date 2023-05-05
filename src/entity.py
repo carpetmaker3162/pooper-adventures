@@ -11,16 +11,16 @@ class Entity(pygame.sprite.Sprite):
     """
 
     def __init__(self,
-                 image="assets/none.png",
-                 x=0,
-                 y=0,
-                 width=100,
-                 height=100,
-                 hp=-1,
-                 hp_bar_size=None,
-                 team=0):
+            image="assets/none.png",
+            spawn=(0, 0),
+            size=(100, 100),
+            hp=-1,
+            hp_bar_size=None,
+            team=0):
 
         super().__init__()
+        width, height = size
+        x, y = spawn
 
         self.image = get_image(image, width, height)
         self.rect = self.image.get_rect()
@@ -32,8 +32,7 @@ class Entity(pygame.sprite.Sprite):
         else:
             self.hp_bar_size = hp_bar_size
 
-        self.x = x
-        self.y = y
+        self.x, self.y = spawn
         self.x_speed = 0
         self.y_speed = 0
         self.invulnerable = False

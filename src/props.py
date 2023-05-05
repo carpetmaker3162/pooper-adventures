@@ -1,15 +1,15 @@
 from src.entity import Entity
 
 class Crate(Entity):
-    def __init__(self, x, y, width=200, height=200):
-        super().__init__("assets/crate.png", x, y, width, height, -1, 0)
+    def __init__(self, spawn=(0, 0), size=(200, 200)):
+        super().__init__("assets/crate.png", spawn, size, -1, 0)
 
 
 class Lava(Entity):
-    def __init__(self, x, y, width=960, height=100):
-        super().__init__("assets/lava.png", x, y, width, height, -1, 0)
+    def __init__(self, spawn=(0, 0), size=(960, 100)):
+        super().__init__("assets/lava.png", spawn, size, -1, 0)
 
 
 class Objective(Entity):
-    def __init__(self, x, y, width=100, height=100):
-        super().__init__("assets/burger.png", x, y, width, height, -1, 0)
+    def __init__(self, spawn=(0, 0), size=(100, 100)):
+        super().__init__("assets/burger.png", spawn, size, -1, 0)

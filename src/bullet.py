@@ -3,9 +3,8 @@ from src.entity import Entity
 
 class Bullet(Entity):
     def __init__(
-            self, 
-            x,
-            y,
+            self,
+            spawn: tuple,
             team=0,
             speed=100,
             direction="right",
@@ -22,7 +21,7 @@ class Bullet(Entity):
         0 = left
         1 = right
         """
-        super().__init__("assets/bullet.png", x, y, 15, 5)
+        super().__init__("assets/bullet.png", spawn, (15, 5))
         self.team = team
         
         if direction == "right":
