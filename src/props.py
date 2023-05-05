@@ -13,3 +13,8 @@ class Lava(Entity):
 class Objective(Entity):
     def __init__(self, spawn=(0, 0), size=(100, 100)):
         super().__init__("assets/burger.png", spawn, size, -1, 0)
+
+
+class Vial(Entity):
+    def __init__(self, spawn=(0, 0), size=(50, 50)):
+        super().__init__("assets/none.png", spawn, size, -1, 0)
