@@ -1,9 +1,19 @@
+"""
+camera notes:
+
+either maintain coordinates of the screen or maintain some 
+camera object
+
+keep a list of all objects and render them if they are in fov
+(kill sprites that are not in the fov)
+"""
+
 import os
 import sys
 
-from utils import decrease, increase, is_positive, get_image, sign
-from parser import get_level, display
-from src.bullet import Bullet
+from entities.bullet import Bullet
+from utils.misc import decrease, increase, is_positive, get_image, sign
+from utils.parser import get_level, display
 
 import pygame
 
@@ -17,7 +27,10 @@ levels = []
 level_directory = os.listdir("levels")
 
 for filename in level_directory:
-    id = int(filename.removesuffix(".json"))
+    try:
+        id = int(filename.removesuffix(".json"))
+    except ValueError:
+        pass
     levels.append(id)
 
 MAX_LEVEL = max(levels)
@@ -78,6 +91,10 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
+        if keys[pygame.K_k]:
+            if self.event_ticker == 0:
+                self.event_ticker = 10
+                self.next_level()
 
     # move to next level and display
     def next_level(self):
@@ -104,7 +121,8 @@ class Game:
 
     def display_game_info(self):
         self.entitycount = 2 + len(self.collidables) + len(self.fatal) + len(self.bullets)
-
+        
+        # only reason im keeping this is because i will soon be morally obligated to fix the broken physics
         coordinates = ARIAL.render(
             f"({self.player.x}, {self.player.y})", False, (0, 0, 0))
         onground = ARIAL.render(

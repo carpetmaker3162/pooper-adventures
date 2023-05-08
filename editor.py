@@ -2,13 +2,15 @@ import json
 import os
 import sys
 import math
-from src.player import Player
-from src.enemy import Enemy
-from src.props import Crate, Lava, Objective
-from utils import get_image
-from parser import display, serialize
+
+from entities.player import Player
+from entities.enemy import Enemy
+from entities.props import Crate, Lava, Objective
+from utils.misc import get_image
+from utils.parser import display, serialize, sprites, sprite_attrs
 
 import pygame
+
 pygame.init()
 
 
@@ -30,13 +32,13 @@ image_paths = {
 
 class Button(pygame.sprite.Sprite):
     def __init__(self,
-                 image="assets/none.png",
-                 x=0,
-                 y=0,
-                 width=100,
-                 height=100,
-                 text="",
-                 id=0):
+            image="assets/none.png",
+            x=0,
+            y=0,
+            width=100,
+            height=100,
+            text="",
+            id=0):
         super().__init__()
 
         self.image = get_image(image, width, height)
@@ -47,7 +49,6 @@ class Button(pygame.sprite.Sprite):
         self.y = y
         self.width = width
         self.height = height
-        self.text = text
         self.id = id
 
     def is_hovering(self, mousex, mousey):
@@ -61,7 +62,7 @@ class Button(pygame.sprite.Sprite):
 class Editor:
     def __init__(self, fps, imported_level=None) -> None:
         self.screen_width = 900
-        self.screen_height = 700
+        self.screen_height = 800
         self.fps = fps
 
         self.stopped = False
@@ -97,15 +98,15 @@ class Editor:
                 data = json.loads(raw)
                 data = display(self.g, data)
             self.player = data["player"]
-            self.enemies = data["enemies"]
-            self.collidables = data["collidables"]
+            self.enemies = data["enemy"]
+            self.collidables = data["collidable"]
             self.fatal = data["fatal"]
-            self.objective = data["objectives"].sprites()[0]
+            self.objective = data["objective"]
         else:
-            self.player = Player(-1000, -1000)
+            self.player = Player((-1000, -1000))
             self.enemies = pygame.sprite.Group()
             self.collidables = pygame.sprite.Group()
-            self.objective = Objective(-1000, -1000)
+            self.objective = Objective((-1000, -1000))
             self.fatal = pygame.sprite.Group()
 
         # add buttons (i is for button positions)
@@ -138,20 +139,15 @@ class Editor:
     def get_component(self, x, y, w, h, **kwargs):
         match self.active_component_name:
             case "player":
-                return Player(x, y, w, h, hp=100)
+                return Player((x, y), (w, h), hp=100)
             case "enemy":  # change once enemy types are added
                 direction = kwargs.get("orient", "left")
                 return Enemy(f"assets/canpooper_{direction}_angry.png",
-                             x, y, w, h, bullet_damage=25,
+                             (x, y), (w, h), bullet_damage=25,
                              facing=direction)
-            case "collidable":
-                return Crate(x, y, w, h)
-            case "objective":
-                return Objective(x, y, w, h)
-            case "fatal":
-                return Lava(x, y, w, h)
             case _:
-                raise ValueError("wtf")
+                sprite_type = sprites[self.active_component_name]
+                return sprite_type((x, y), (w, h))
 
     def set_component(self, component):
         match self.active_component_name:
@@ -212,7 +208,7 @@ class Editor:
         if self.event_ticker > 0:
             self.event_ticker -= 1
         elif self.event_ticker == 0:
-            self.event_ticker = 5
+            self.event_ticker = 10
             if keys[pygame.K_j]:
                 self.component_h -= 25
             elif keys[pygame.K_k]:
@@ -225,10 +221,8 @@ class Editor:
                 self.component_w *= 2
                 self.component_h *= 2
             elif keys[pygame.K_DOWN]:
-                self.component_w /= 2
-                self.component_h /= 2
-                self.component_w = int(self.component_w)
-                self.component_h = int(self.component_h)
+                self.component_w = round(self.component_w / 2)
+                self.component_h = round(self.component_h / 2)
 
         self.component_w = max(25, self.component_w)
         self.component_h = max(25, self.component_h)
