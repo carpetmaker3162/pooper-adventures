@@ -1,1 +1,0 @@
-{"player": {"spawn": "200,200", "size": "100,100", "hp": 100}, "enemy": [], "collidable": [{"spawn": "200,300", "size": "100,100"}, {"spawn": "500,400", "size": "100,100"}], "objective": {"spawn": "500,300", "size": "100,100"}, "fatal": []}
