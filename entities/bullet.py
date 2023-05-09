@@ -2,6 +2,9 @@ from entities.entity import Entity
 import pygame
 
 class Bullet(Entity):
+    singular = False
+    name = "bullet"
+
     def __init__(self,
             spawn: tuple,
             team=0,
@@ -12,14 +15,6 @@ class Bullet(Entity):
             screen_width=900,
             screen_height=600):
 
-        """
-        Arguments:
-        x:              start x
-        y:              start y
-        Directions:
-        0 = left
-        1 = right
-        """
         super().__init__("assets/bullet.png", spawn, (15, 5))
         self.team = team
         

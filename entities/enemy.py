@@ -1,10 +1,14 @@
 from entities.entity import Entity
 from entities.bullet import Bullet
+from utils.misc import image_paths
 import pygame
 
 class Enemy(Entity):
+    singular = False
+    name = "enemy"
+
     def __init__(self,
-            image="assets/none.png",
+            image=image_paths["enemy"],
             spawn=(0, 0),
             size=(100, 100),
             hp=50,

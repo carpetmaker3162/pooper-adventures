@@ -3,6 +3,9 @@ from entities.entity import Entity
 import pygame
 
 class Player(Entity):
+    singular = True
+    name = "player"
+
     def __init__(self,
             spawn=(0, 0),
             size=(100, 100),

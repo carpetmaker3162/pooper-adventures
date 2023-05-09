@@ -13,7 +13,7 @@ sprite_attrs = {
     "firingRate": "firing_cooldown"
 }
 
-sprites = {
+sprite_types = {
     "player": Player,
     "enemy": Enemy,
     "collidable": Crate,
@@ -22,6 +22,12 @@ sprites = {
 }
 
 def serialize(component):
+    if isinstance(component, list):
+        res = []
+        for sprite in component:
+            res.append(serialize(sprite))
+        return res
+
     x = component.x
     y = component.y
     w = component.width
@@ -31,7 +37,6 @@ def serialize(component):
         return {
             "spawn": f"{x},{y}",
             "size": f"{w},{h}",
-            "facing": "right",
             "hp": 100
         }
     elif isinstance(component, Enemy):
@@ -85,11 +90,11 @@ def display(g: pygame.surface.Surface, data):
 
                 # handle objects that need to be initialized with additional arguments
                 if key == "enemy":
-                    obj = sprites[key](
+                    obj = sprite_types[key](
                         f"assets/canpooper_{arguments.get('facing', 'right')}_angry.png",
                         **arguments)
                 else:
-                    obj = sprites[key](**arguments)
+                    obj = sprite_types[key](**arguments)
 
                 group.add(obj)
 
@@ -101,13 +106,13 @@ def display(g: pygame.surface.Surface, data):
             for attr in section.keys():
                 arguments[sprite_attrs.get(attr, attr)] = unwrap(section, attr)
 
-            obj = sprites[key](**arguments)
+            obj = sprite_types[key](**arguments)
 
             obj.draw(g)
             new[key] = obj
     
     # add in empty groups where needed
-    for sprite_type in sprites:
+    for sprite_type in sprite_types:
         if sprite_type not in new:
             new[sprite_type] = []
 

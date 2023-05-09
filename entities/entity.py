@@ -1,7 +1,6 @@
 from utils.misc import get_image, sign
 import pygame
 
-
 class Entity(pygame.sprite.Sprite):
     """
     Team ID
@@ -9,6 +8,8 @@ class Entity(pygame.sprite.Sprite):
     1 = player
     2 = enemy
     """
+    singular = False
+    name = "entity"
 
     def __init__(self,
             image="assets/none.png",
