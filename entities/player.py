@@ -70,14 +70,14 @@ class Player(Entity):
     def has_reached_objective(self, objective):
         return pygame.sprite.collide_rect(self, objective)
 
-    def update(self, collidables, fatal, bullets, screen):
-        super().update(collidables, fatal, bullets, screen)
+    def update(self, objects: dict, bullets, screen):
+        super().update(objects, bullets, screen)
 
         keys = pygame.key.get_pressed()
         no_keys_pressed = not (keys[pygame.K_a] or keys[pygame.K_d] or keys[pygame.K_LEFT] or keys[pygame.K_RIGHT])
 
-        self.on_ground = self.is_on_ground(collidables)
-        hitting_ceiling = self.hitting_ceiling(collidables)
+        self.on_ground = self.is_on_ground(objects["collidable"])
+        hitting_ceiling = self.hitting_ceiling(objects["collidable"])
 
         # change or apply acceleration depending on whether player is on the ground
         if not self.on_ground:
@@ -138,7 +138,7 @@ class Player(Entity):
 
         # has to round because floatingpoint imprecision causes issues with pygames coordinate system or something.
         # fix if a better way is found
-        self.move(round(self.x_speed), round(self.y_speed), collidables)
+        self.move(round(self.x_speed), round(self.y_speed), objects["collidable"])
     
     def respawn(self, timeout):
         pygame.time.wait(timeout)
@@ -152,4 +152,3 @@ class Player(Entity):
     def die(self):
         self.death_count += 1
         self.respawn(1)
-

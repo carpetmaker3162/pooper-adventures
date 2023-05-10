@@ -11,9 +11,7 @@ class Bullet(Entity):
             speed=100,
             direction="right",
             lifetime=8000,
-            damage=10,
-            screen_width=900,
-            screen_height=600):
+            damage=10):
 
         super().__init__("assets/bullet.png", spawn, (15, 5))
         self.team = team
@@ -26,12 +24,9 @@ class Bullet(Entity):
         self.lifetime = lifetime
         self.life_begin = pygame.time.get_ticks()
         self.damage = damage
-        self.screen_width = screen_width
-        self.screen_height = screen_height
     
     def update(self):
-        if pygame.time.get_ticks() - self.life_begin > self.lifetime \
-            or (self.x > self.screen_width + 100 or self.x < -100) or self.y > (self.screen_height + 100 or self.y < -100):
+        if pygame.time.get_ticks() - self.life_begin > self.lifetime:
             self.kill()
 
     def move(self, x, y, collidables):

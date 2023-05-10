@@ -313,9 +313,8 @@ class Editor:
             pygame.Rect(0, 600, 900, 100)
         )
         
-        # change once when we get to adding scrolling
         for component in self.written_objects.values():
-            if isinstance(component, list):
+            if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
                 for obj in component:
                     if self.scene_x <= obj.x <= self.scene_x + self.screen_width:
                         # we do a little trolling (move the obj to desired location on screen so its blitted to its relative position on the screen)

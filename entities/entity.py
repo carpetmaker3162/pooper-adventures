@@ -47,6 +47,8 @@ class Entity(pygame.sprite.Sprite):
         #     255, 0, 0), self.rect, width=5)
         screen.blit(
             self.image, (self.rect.center[0] - self.width/2, self.rect.center[1] - self.height/2))
+        if self.hp != self.max_hp and not self.invulnerable:
+            self.draw_hp_bar(screen)
 
     def move(self, x, y, collidables):
         dx = x
@@ -72,10 +74,7 @@ class Entity(pygame.sprite.Sprite):
         self.rect.move_ip((-x, -y))
         return colliding
 
-    def update(self, collidables, fatal, bullets, screen):
-        if self.hp != self.max_hp and not self.invulnerable:
-            self.draw_hp_bar(screen)
-
+    def update(self, objects: dict, bullets, screen):
         if not self.invulnerable:
             for bullet in pygame.sprite.spritecollide(self, bullets, False):
                 if bullet.team != self.team:
