@@ -30,3 +30,14 @@ Control Panel:
 - Click on the 2 arrows icon to change the orientation of enemies (this only affects enemy sprites)
 
 note that you can only place 1 player and 1 objective for obvious reasons (you can't delete a player or objective with "delete mode" either, because you can just re-place them)
+
+## Advanced (CLI Options)
+
+this game offers some cli options for those who likes the cli so much
+they are used to alter the behaviour of the game in a way that is usually only useful for debugging
+here are the only ones we have so far
+
+u can also check der source code if u want to see what they do behind the scenes
+
+- `--enable-level-skipping`: lets u skip levels with keypress. used fer dev purposes only, do not use to cheat!!!
+- `--not-resizable`: make the window hard to that u cant resize it. useful for some tiling wms (like i3wm).
