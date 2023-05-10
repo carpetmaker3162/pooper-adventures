@@ -151,6 +151,7 @@ class Editor:
                                 id="right"))
 
     def get_component(self, x, y, w, h, **kwargs):
+        x = x + self.scene_x
         match self.active_component_name:
             case "player":
                 return Player((x, y), (w, h), hp=100)
@@ -301,7 +302,7 @@ class Editor:
                 self.component_h,
                 orient=self.orientation
             )
-
+            component.move(-self.scene_x, 0, pygame.sprite.Group()) # move to relative position on screen (we do a little trolling part 2)
             component.draw(self.g)
 
         self.draw_grid()
@@ -316,9 +317,16 @@ class Editor:
         for component in self.written_objects.values():
             if isinstance(component, list):
                 for obj in component:
-                    obj.draw(self.g)
+                    if self.scene_x <= obj.x <= self.scene_x + self.screen_width:
+                        # we do a little trolling (move the obj to desired location on screen so its blitted to its relative position on the screen)
+                        obj.move(-self.scene_x, 0, pygame.sprite.Group())
+                        obj.draw(self.g)
+                        obj.move(self.scene_x, 0, pygame.sprite.Group())
             else:
-                component.draw(self.g)
+                if self.scene_x <= component.x <= self.scene_x + self.screen_width:
+                    component.move(-self.scene_x, 0, pygame.sprite.Group())
+                    component.draw(self.g)
+                    component.move(self.scene_x, 0, pygame.sprite.Group())
 
         self.buttons.draw(self.g)
 
