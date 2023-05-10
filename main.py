@@ -1,13 +1,3 @@
-"""
-camera notes:
-
-either maintain coordinates of the screen or maintain some 
-camera object
-
-keep a list of all objects and render them if they are in fov
-(kill sprites that are not in the fov)
-"""
-
 import os
 import sys
 

@@ -1,24 +1,3 @@
-"""
-camera notes
-
-keep track of all objects in a dict regardless of if they are in 
-the current scene. every time the left/right buttons are pressed, 
-kill the objects that are outside of the scene. and add ones that 
-are now in the scene
-
-instead of doing ```
-self.player.draw(self.g),
-self.enemy.draw(self.g),
-```
-keep track of all objects that are drawn. every time set_component
-is called, add it to a dictionary of objects
-
-then instead of doing the above code block iterate through the 
-dictionary of objects, and draw them one by one, checking if they 
-are within the current scene. this way there should be no more need
-for sprite groups
-"""
-
 import json
 import os
 import sys
