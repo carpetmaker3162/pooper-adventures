@@ -2,8 +2,8 @@ import os
 import sys
 
 from entities.bullet import Bullet
-from utils.misc import decrease, increase, is_positive, get_image, sign
-from utils.parser import get_level, display, sprite_types
+from utils.misc import get_image
+from utils.parser import get_level, display
 
 import pygame
 
