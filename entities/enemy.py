@@ -1,14 +1,16 @@
-from src.entity import Entity
-from src.bullet import Bullet
+from entities.entity import Entity
+from entities.bullet import Bullet
+from utils.misc import image_paths
 import pygame
 
 class Enemy(Entity):
+    singular = False
+    name = "enemy"
+
     def __init__(self,
-            image="assets/none.png",
-            x=0,
-            y=0,
-            width=100,
-            height=100,
+            image=image_paths["enemy"],
+            spawn=(0, 0),
+            size=(100, 100),
             hp=50,
             bullet_damage=10,
             facing="left",
@@ -22,7 +24,7 @@ class Enemy(Entity):
         hp:             health points for entity
         bullet_damage:   damage dealt by its bullets
         """
-        super().__init__(image, x, y, width, height, hp)
+        super().__init__(image, spawn, size, hp)
         self.direction = facing
         self.firing_cooldown = firing_cooldown
         self.team = 2
@@ -33,14 +35,11 @@ class Enemy(Entity):
         self.last_bullet_fired = -float("inf")
         self.facing = facing
     
-    def update(self, collidables, fatal, bullets, screen):
-        super().update(collidables, fatal, bullets, screen)
+    def update(self, objects, bullets, screen):
+        super().update(objects, bullets, screen)
 
         current_time = pygame.time.get_ticks()
         
         if current_time - self.last_bullet_fired >= self.firing_cooldown:
-            self.bullets.add(Bullet(self.x, self.y, self.team, 15, self.direction, 3000, self.bullet_damage))
+            self.bullets.add(Bullet((self.x, self.y), self.team, 15, self.direction, 3000, self.bullet_damage))
             self.last_bullet_fired = current_time
-        
-        self.bullets.draw(screen)
-

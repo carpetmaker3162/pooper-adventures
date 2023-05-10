@@ -1,6 +1,5 @@
-from utils import get_image, sign
+from utils.misc import get_image, sign
 import pygame
-
 
 class Entity(pygame.sprite.Sprite):
     """
@@ -9,31 +8,27 @@ class Entity(pygame.sprite.Sprite):
     1 = player
     2 = enemy
     """
+    singular = False
+    name = "entity"
 
     def __init__(self,
-                 image="assets/none.png",
-                 x=0,
-                 y=0,
-                 width=100,
-                 height=100,
-                 hp=-1,
-                 hp_bar_size=None,
-                 team=0):
+            image="assets/none.png",
+            spawn=(0, 0),
+            size=(100, 100),
+            hp=-1,
+            team=0):
 
         super().__init__()
+        self.width, self.height = size
+        self.x, self.y = spawn
 
-        self.image = get_image(image, width, height)
+        self.image = get_image(image, self.width, self.height)
         self.rect = self.image.get_rect()
-        self.rect.center = (x + width/2, y + height/2)
+        self.rect.center = (self.x + self.width/2, self.y + self.height/2)
         self.team = team
 
-        if not hp_bar_size:
-            self.hp_bar_size = width
-        else:
-            self.hp_bar_size = hp_bar_size
+        self.hp_bar_size = self.width
 
-        self.x = x
-        self.y = y
         self.x_speed = 0
         self.y_speed = 0
         self.invulnerable = False
@@ -46,15 +41,14 @@ class Entity(pygame.sprite.Sprite):
         if hp < 0:  # invulnerable if negative
             self.invulnerable = True
 
-        self.width = width
-        self.height = height
-
-    def draw(self, screen):
+    def draw(self, screen, x_offset=0):
         # if self.hitbox:
-        #    pygame.draw.rect(screen, pygame.Color(
-        #        255, 0, 0), self.rect, width=5)
+        # pygame.draw.rect(screen, pygame.Color(
+        #     255, 0, 0), self.rect, width=5)
         screen.blit(
-            self.image, (self.rect.center[0] - self.width/2, self.rect.center[1] - self.height/2))
+            self.image, (self.rect.center[0] - self.width/2 - x_offset, self.rect.center[1] - self.height/2))
+        if self.hp != self.max_hp and not self.invulnerable:
+            self.draw_hp_bar(screen, x_offset)
 
     def move(self, x, y, collidables):
         dx = x
@@ -80,10 +74,7 @@ class Entity(pygame.sprite.Sprite):
         self.rect.move_ip((-x, -y))
         return colliding
 
-    def update(self, collidables, fatal, bullets, screen):
-        if self.hp != self.max_hp and not self.invulnerable:
-            self.draw_hp_bar(screen)
-
+    def update(self, objects: dict, bullets, screen):
         if not self.invulnerable:
             for bullet in pygame.sprite.spritecollide(self, bullets, False):
                 if bullet.team != self.team:
@@ -93,8 +84,8 @@ class Entity(pygame.sprite.Sprite):
         if self.hp < 0 and not self.invulnerable:
             self.kill()
 
-    def draw_hp_bar(self, screen: pygame.Surface):
-        pos = (self.x - ((self.hp_bar_size - self.width) / 2), self.y - 15)
+    def draw_hp_bar(self, screen: pygame.Surface, x_offset=0):
+        pos = (self.x - x_offset - ((self.hp_bar_size - self.width)), self.y - 15)
         size = (self.hp_bar_size, 10)
         pygame.draw.rect(screen, (0, 0, 0), (pos, size), 1)
         bar_pos = (pos[0] + 3, pos[1] + 3)

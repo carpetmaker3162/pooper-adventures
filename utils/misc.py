@@ -1,6 +1,14 @@
 import pygame
 import copy
 
+image_paths = {
+    "player": "assets/canpooper_right.png",
+    "enemy": "assets/canpooper_right_angry.png",
+    "collidable": "assets/crate.png",
+    "objective": "assets/burger.png",
+    "fatal": "assets/lava.png"
+}
+
 cache = {}
 
 def decrease(number, by):

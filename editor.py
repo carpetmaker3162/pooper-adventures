@@ -2,13 +2,15 @@ import json
 import os
 import sys
 import math
-from src.player import Player
-from src.enemy import Enemy
-from src.props import Crate, Lava, Objective
-from utils import get_image
-from parser import display, serialize
+
+from entities.player import Player
+from entities.enemy import Enemy
+from entities.props import Crate, Lava, Objective
+from utils.misc import get_image, image_paths
+from utils.parser import display, serialize, sprite_types, sprite_attrs
 
 import pygame
+
 pygame.init()
 
 
@@ -19,24 +21,16 @@ def floor_to_nearest(coordinate: tuple, incr: tuple):
             incry * math.floor(y / incry))
 
 
-image_paths = {
-    "player": "assets/canpooper_right.png",
-    "enemy": "assets/canpooper_right_angry.png",
-    "collidable": "assets/crate.png",
-    "objective": "assets/burger.png",
-    "fatal": "assets/lava.png"
-}
-
-
 class Button(pygame.sprite.Sprite):
     def __init__(self,
-                 image="assets/none.png",
-                 x=0,
-                 y=0,
-                 width=100,
-                 height=100,
-                 text="",
-                 id=0):
+            image="assets/none.png",
+            x=0,
+            y=0,
+            width=100,
+            height=100,
+            text="",
+            id=0):
+
         super().__init__()
 
         self.image = get_image(image, width, height)
@@ -47,7 +41,6 @@ class Button(pygame.sprite.Sprite):
         self.y = y
         self.width = width
         self.height = height
-        self.text = text
         self.id = id
 
     def is_hovering(self, mousex, mousey):
@@ -61,7 +54,7 @@ class Button(pygame.sprite.Sprite):
 class Editor:
     def __init__(self, fps, imported_level=None) -> None:
         self.screen_width = 900
-        self.screen_height = 700
+        self.screen_height = 800
         self.fps = fps
 
         self.stopped = False
@@ -70,6 +63,7 @@ class Editor:
         self.event_ticker = 10
         self.delete_mode = False
         self.orientation = "left"
+        self.scene_x = 0 # top left corner x-value of page that is being scrolled
 
         self.component_w = 100
         self.component_h = 100
@@ -80,95 +74,83 @@ class Editor:
         self.g = self.screen.copy()
         self.clock = pygame.time.Clock()
 
-        self.data = {
-            "player": {},
-            "enemy": [],
-            "collidable": [],
-            "objective": {},
-            "fatal": []
-        }
+        self.export_data = {} # dictionary of serialized data that will be exported to files
+        self.written_objects = {} # dictionary of sprite objects that will be drawn. replaces the variables that are created for each type of object
+
+        for type_name, sprite_class in sprite_types.items():
+            # whether or not an object will potentially appear in groups
+            if sprite_class.singular:
+                self.export_data[type_name] = {}
+            else:
+                self.export_data[type_name] = []
 
         # display imported level
         if imported_level is not None:
             if not os.path.exists(imported_level):
                 raise FileNotFoundError("lmao idiot")
+
             with open(imported_level) as f:
                 raw = f.read()
                 data = json.loads(raw)
                 data = display(self.g, data)
-            self.player = data["player"]
-            self.enemies = data["enemies"]
-            self.collidables = data["collidables"]
-            self.fatal = data["fatal"]
-            self.objective = data["objectives"].sprites()[0]
+
+            self.written_objects.update(data)
         else:
-            self.player = Player(-1000, -1000)
-            self.enemies = pygame.sprite.Group()
-            self.collidables = pygame.sprite.Group()
-            self.objective = Objective(-1000, -1000)
-            self.fatal = pygame.sprite.Group()
+            for type_name, sprite_class in sprite_types.items():
+                if sprite_class.singular:
+                    self.written_objects[type_name] = sprite_types[type_name]((-1000, -1000))
+                else:
+                    self.written_objects[type_name] = []
 
-        # add buttons (i is for button positions)
+        # add buttons cooresponding to each type of sprite, in a row along the top row of the editor toolbar
         self.buttons = pygame.sprite.Group()
-        for i, target in enumerate(self.data):
-            button = Button(image=image_paths[target],
-                            x=25 + 100*i, y=625,
-                            width=50, height=50,
-                            id=target)
-            self.buttons.add(button)
+        for i, target in enumerate(self.written_objects.keys()):
+            self.buttons.add(Button(image=image_paths[target],
+                            x=25 + 100*i, y=625, width=50, height=50,
+                            id=target))
 
-        reflect_button = Button(image="assets/reflection.png",
-                                x=625, y=625,
-                                width=50, height=50,
-                                id="reflect")
-        self.buttons.add(reflect_button)
+        self.buttons.add(Button(image="assets/reflection.png",
+                                x=625, y=625, width=50, height=50,
+                                id="reflect"))
 
-        delete_button = Button(image="assets/trash.png",
-                               x=725, y=625,
-                               width=50, height=50,
-                               id="delete")
-        self.buttons.add(delete_button)
+        self.buttons.add(Button(image="assets/trash.png",
+                                x=725, y=625, width=50, height=50,
+                                id="delete"))
 
-        save_button = Button(image="assets/download.png",
-                             x=825, y=625,
-                             width=50, height=50,
-                             id="save")
-        self.buttons.add(save_button)
+        self.buttons.add(Button(image="assets/download.png",
+                                x=825, y=625, width=50, height=50,
+                                id="save"))
+
+        self.buttons.add(Button(image="assets/arrow_left.png",
+                                x=725, y=725, width=50, height=50,
+                                id="left"))
+
+        self.buttons.add(Button(image="assets/arrow_right.png",
+                                x=825, y=725, width=50, height=50,
+                                id="right"))
 
     def get_component(self, x, y, w, h, **kwargs):
+        x = x + self.scene_x
         match self.active_component_name:
             case "player":
-                return Player(x, y, w, h, hp=100)
+                return Player((x, y), (w, h), hp=100)
             case "enemy":  # change once enemy types are added
                 direction = kwargs.get("orient", "left")
                 return Enemy(f"assets/canpooper_{direction}_angry.png",
-                             x, y, w, h, bullet_damage=25,
+                             (x, y), (w, h), bullet_damage=25,
                              facing=direction)
-            case "collidable":
-                return Crate(x, y, w, h)
-            case "objective":
-                return Objective(x, y, w, h)
-            case "fatal":
-                return Lava(x, y, w, h)
             case _:
-                raise ValueError("wtf")
+                sprite_type = sprite_types[self.active_component_name]
+                return sprite_type((x, y), (w, h))
 
     def set_component(self, component):
-        match self.active_component_name:
-            case "player":
-                self.player = component
-            case "enemy":
-                self.enemies.add(component)
-            case "collidable":
-                self.collidables.add(component)
-            case "objective":
-                self.objective = component
-            case "fatal":
-                self.fatal.add(component)
-            case _:
-                raise ValueError("when the bruh")
+        if type(component).singular:
+            self.written_objects[component.name] = component
+        else:
+            self.written_objects[component.name].append(component)
 
     def change_component(self, name: str):
+        # change this later but fine for now
         self.active_component_name = name
 
     def save(self):
@@ -182,26 +164,13 @@ class Editor:
 
         print(f"Saving level at '{fp}'")
 
-        self.data["player"] = serialize(self.player)
-
-        self.data["enemy"] = []
-        for enemy in self.enemies:
-            self.data["enemy"].append(serialize(enemy))
-
-        self.data["collidable"] = []
-        for collidable in self.collidables:
-            self.data["collidable"].append(serialize(collidable))
-
-        self.data["objective"] = serialize(self.objective)
-
-        self.data["fatal"] = []
-        for fatal in self.fatal:
-            self.data["fatal"].append(serialize(fatal))
+        for key, component in self.written_objects.items():
+            self.export_data[key] = serialize(component)
 
         assert not os.path.exists(fp)
 
         with open(fp, "w") as f:
-            f.write(json.dumps(self.data))
+            f.write(json.dumps(self.export_data))
 
         print(f"Saved at '{fp}'")
 
@@ -212,7 +181,7 @@ class Editor:
         if self.event_ticker > 0:
             self.event_ticker -= 1
         elif self.event_ticker == 0:
-            self.event_ticker = 5
+            self.event_ticker = 10
             if keys[pygame.K_j]:
                 self.component_h -= 25
             elif keys[pygame.K_k]:
@@ -225,10 +194,8 @@ class Editor:
                 self.component_w *= 2
                 self.component_h *= 2
             elif keys[pygame.K_DOWN]:
-                self.component_w /= 2
-                self.component_h /= 2
-                self.component_w = int(self.component_w)
-                self.component_h = int(self.component_h)
+                self.component_w = round(self.component_w / 2)
+                self.component_h = round(self.component_h / 2)
 
         self.component_w = max(25, self.component_w)
         self.component_h = max(25, self.component_h)
@@ -237,7 +204,7 @@ class Editor:
         x, y = self.mouse_pos
         # Checks whether the mouse clicked within the toolbar
         # or not.
-        if y > self.screen_height - 100:
+        if y > 600:
             for button in self.buttons:
                 if button.is_hovering(x, y):
                     if button.id == "delete":
@@ -248,23 +215,25 @@ class Editor:
                         self.orientation = ("left" if
                                             self.orientation == "right" else
                                             "right")
+                    elif button.id == "right":
+                        self.scene_x += self.screen_width
+                    elif button.id == "left":
+                        self.scene_x -= self.screen_width
+                        self.scene_x = max(self.scene_x, 0)
                     else:
                         self.delete_mode = False
                         self.change_component(button.id)
         else:
-            gx, gy = floor_to_nearest(
-                (x, y), (self.component_w, self.component_h))
             if self.delete_mode:
-                for e in self.enemies:
-                    if e.lies_on(x, y):
-                        e.kill()
-                for c in self.collidables:
-                    if c.lies_on(x, y):
-                        c.kill()
-                for f in self.fatal:
-                    if f.lies_on(x, y):
-                        f.kill()
+                for key, component in self.written_objects.items():
+                    if not isinstance(component, list):
+                        return
+                    for obj in components:
+                        if obj.lies_on(x, y):
+                            self.written_objects[key].remove(obj)
             else:
+                gx, gy = floor_to_nearest(
+                    (x, y), (self.component_w, self.component_h))
                 component = self.get_component(gx, gy,
                                                self.component_w,
                                                self.component_h,
@@ -311,8 +280,8 @@ class Editor:
                 self.component_w,
                 self.component_h,
                 orient=self.orientation
-            )  # change w/h later
-
+            )
+            component.move(-self.scene_x, 0, pygame.sprite.Group()) # move to relative position on screen (we do a little trolling part 2)
             component.draw(self.g)
 
         self.draw_grid()
@@ -322,12 +291,21 @@ class Editor:
             (255, 255, 255),
             pygame.Rect(0, 600, 900, 100)
         )
+        
+        for component in self.written_objects.values():
+            if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
+                for obj in component:
+                    if self.scene_x <= obj.x <= self.scene_x + self.screen_width:
+                        # we do a little trolling (move the obj to desired location on screen so its blitted to its relative position on the screen)
+                        obj.move(-self.scene_x, 0, pygame.sprite.Group())
+                        obj.draw(self.g)
+                        obj.move(self.scene_x, 0, pygame.sprite.Group())
+            else:
+                if self.scene_x <= component.x <= self.scene_x + self.screen_width:
+                    component.move(-self.scene_x, 0, pygame.sprite.Group())
+                    component.draw(self.g)
+                    component.move(self.scene_x, 0, pygame.sprite.Group())
 
-        self.player.draw(self.g)
-        self.enemies.draw(self.g)
-        self.collidables.draw(self.g)
-        self.objective.draw(self.g)
-        self.fatal.draw(self.g)
         self.buttons.draw(self.g)
 
         self.screen.blit(
