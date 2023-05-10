@@ -151,16 +151,24 @@ class Game:
         self.g.blit(entitycount, (10, 85))
         self.g.blit(deaths, (10, 100))
 
-    # Renders everything onto the screen.
-    # Executed everything frame.
     def render(self):
+        x_offset = self.objects["player"].x - \
+            self.screen_width // 2  # subtract
+        scene_left = self.objects["player"].x - self.screen_width // 2
+        scene_right = self.objects["player"].x + self.screen_width
 
-        self.player.draw(self.g)
-        self.collidables.draw(self.g)
-        self.fatal.draw(self.g)
-        self.objectives.draw(self.g)
-        self.bullets.draw(self.g)
-        self.enemies.draw(self.g)
+        for component in self.objects.values():
+            if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
+                for obj in component:
+                    if scene_left <= obj.x or obj.x + obj.width <= scene_right:
+                        obj.draw(self.g, x_offset)
+            else:
+                if scene_left <= component.x or component.x + component.width <= scene_right:
+                    component.draw(self.g, x_offset)
+        for bullet in self.bullets:
+            if scene_left <= bullet.x <= scene_right:
+                bullet.draw(self.g, x_offset)
+
         if self.show_info:
             self.display_game_info()
 
@@ -172,35 +180,26 @@ class Game:
     # Executed every frame.
     def update(self):
         if (
-                (pygame.sprite.spritecollideany(self.player, self.fatal) or
-                 self.player.y > 1000 or self.player.hp <= 0)
-                and not self.player.invulnerable
-        ):
+            pygame.sprite.spritecollideany(self.objects['player'], self.objects['fatal']) or
+            self.objects['player'].y > 1000 or
+            self.objects['player'].hp <= 0
+        ) and not self.objects['player'].invulnerable:
             for bullet in self.bullets:
                 bullet.kill()
             self.draw_level(self.level)
-            self.player.die()
+            self.objects['player'].die()
 
-        if self.player.has_reached_objective(self.objectives):
+        if self.objects['player'].has_reached_objective(self.objects['objective']):
             self.next_level()
-            return
 
-        for bullet in self.bullets:
-            if (
-                bullet.x > self.screen_width
-                or bullet.x < 0
-                or bullet.y > self.screen_height or bullet.y < 0
-            ):
-                bullet.kill()
-            bullet.move(bullet.x_speed, bullet.y_speed, self.collidables)
-            bullet.update()
+        self.bullets.update(self.objects)
 
-        for enemy in self.enemies:
-            enemy.update(self.collidables, self.fatal, self.bullets, self.g)
+        for enemy in self.objects['enemy']:
+            enemy.update(self.objects, self.bullets, self.g)
             for bullet in enemy.bullets:
                 self.bullets.add(bullet)
 
-        self.player.update(self.collidables, self.fatal, self.bullets, self.g)
+        self.objects["player"].update(self.objects, self.bullets, self.g)
 
     def loop(self):
         while not self.stopped:
@@ -209,47 +208,9 @@ class Game:
 
             self.g.fill((255, 255, 255))
 
-            if (pygame.sprite.spritecollideany(self.objects['player'], self.objects['fatal']) or self.objects['player'].y > 1000 or self.objects['player'].hp <= 0) and not self.objects['player'].invulnerable:
-                for bullet in self.bullets:
-                    bullet.kill()
-                self.draw_level(self.level)
-                self.objects['player'].die()
+            self.update()
+            self.render()
 
-            if self.objects['player'].has_reached_objective(self.objects['objective']):
-                self.next_level()
-                continue
-
-            self.bullets.update(self.objects)
-
-            for enemy in self.objects['enemy']:
-                enemy.update(self.objects, self.bullets, self.g)
-                for bullet in enemy.bullets:
-                    self.bullets.add(bullet)
-
-            self.objects["player"].update(self.objects, self.bullets, self.g)
-
-            x_offset = self.objects["player"].x - \
-                self.screen_width // 2  # subtract
-            scene_left = self.objects["player"].x - self.screen_width // 2
-            scene_right = self.objects["player"].x + self.screen_width
-            for component in self.objects.values():
-                if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
-                    for obj in component:
-                        if scene_left <= obj.x or obj.x + obj.width <= scene_right:
-                            obj.draw(self.g, x_offset)
-                else:
-                    if scene_left <= component.x or component.x + component.width <= scene_right:
-                        component.draw(self.g, x_offset)
-            for bullet in self.bullets:
-                if scene_left <= bullet.x <= scene_right:
-                    bullet.draw(self.g, x_offset)
-
-            if self.show_info:
-                self.display_game_info()
-
-            self.screen.blit(pygame.transform.scale(
-                self.g, self.screen.get_rect().size), (0, 0))
-            pygame.display.flip()
             self.clock.tick(self.framecap)
 
 
