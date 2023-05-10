@@ -25,7 +25,8 @@ class Bullet(Entity):
         self.life_begin = pygame.time.get_ticks()
         self.damage = damage
     
-    def update(self):
+    def update(self, objects):
+        self.move(self.x_speed, self.y_speed, objects['collidable'])
         if pygame.time.get_ticks() - self.life_begin > self.lifetime:
             self.kill()
 

@@ -41,14 +41,14 @@ class Entity(pygame.sprite.Sprite):
         if hp < 0:  # invulnerable if negative
             self.invulnerable = True
 
-    def draw(self, screen):
+    def draw(self, screen, x_offset=0):
         # if self.hitbox:
         # pygame.draw.rect(screen, pygame.Color(
         #     255, 0, 0), self.rect, width=5)
         screen.blit(
-            self.image, (self.rect.center[0] - self.width/2, self.rect.center[1] - self.height/2))
+            self.image, (self.rect.center[0] - self.width/2 - x_offset, self.rect.center[1] - self.height/2))
         if self.hp != self.max_hp and not self.invulnerable:
-            self.draw_hp_bar(screen)
+            self.draw_hp_bar(screen, x_offset)
 
     def move(self, x, y, collidables):
         dx = x
@@ -84,8 +84,8 @@ class Entity(pygame.sprite.Sprite):
         if self.hp < 0 and not self.invulnerable:
             self.kill()
 
-    def draw_hp_bar(self, screen: pygame.Surface):
-        pos = (self.x - ((self.hp_bar_size - self.width) / 2), self.y - 15)
+    def draw_hp_bar(self, screen: pygame.Surface, x_offset=0):
+        pos = (self.x - x_offset - ((self.hp_bar_size - self.width)), self.y - 15)
         size = (self.hp_bar_size, 10)
         pygame.draw.rect(screen, (0, 0, 0), (pos, size), 1)
         bar_pos = (pos[0] + 3, pos[1] + 3)

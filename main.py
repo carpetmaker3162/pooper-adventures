@@ -157,9 +157,7 @@ class Game:
                 self.next_level()
                 continue
             
-            for bullet in self.bullets:
-                bullet.move(bullet.x_speed, bullet.y_speed, self.objects['collidable'])
-                bullet.update()
+            self.bullets.update(self.objects)
             
             for enemy in self.objects['enemy']:
                 enemy.update(self.objects, self.bullets, self.g)
@@ -175,19 +173,13 @@ class Game:
                 if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
                     for obj in component:
                         if scene_left <= obj.x or obj.x + obj.width <= scene_right:
-                            obj.move(-x_offset, 0, pygame.sprite.Group())
-                            obj.draw(self.g)
-                            obj.move(x_offset, 0, pygame.sprite.Group())
+                            obj.draw(self.g, x_offset)
                 else:
                     if scene_left <= component.x or component.x + component.width <= scene_right:
-                        component.move(-x_offset, 0, pygame.sprite.Group())
-                        component.draw(self.g)
-                        component.move(x_offset, 0, pygame.sprite.Group())
+                        component.draw(self.g, x_offset)
             for bullet in self.bullets:
                 if scene_left <= bullet.x <= scene_right:
-                    bullet.move(-x_offset, 0, pygame.sprite.Group())
-                    bullet.draw(self.g)
-                    bullet.move(x_offset, 0, pygame.sprite.Group())
+                    bullet.draw(self.g, x_offset)
 
             if self.show_info:
                 self.display_game_info()
@@ -195,7 +187,6 @@ class Game:
             self.screen.blit(pygame.transform.scale(self.g, self.screen.get_rect().size), (0, 0))
             pygame.display.flip()
             self.clock.tick(self.framecap)
-
 
 if __name__ == "__main__":
     window = Game(fps=60)
