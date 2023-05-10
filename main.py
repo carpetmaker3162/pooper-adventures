@@ -27,13 +27,26 @@ MAX_LEVEL = max(levels)
 
 
 class Game:
-    def __init__(self, fps, enable_level_skipping=False) -> None:
+    def __init__(
+            self, fps, enable_level_skipping=False, enable_resizing=True
+    ) -> None:
         self.screen_width = 900
         self.screen_height = 600
 
-        # self.screen is the actual screen. Everything should be drawn on self.g, because that screen will be resized and drawn onto the real screen
-        self.screen = pygame.display.set_mode(
-            (self.screen_width, self.screen_height), pygame.RESIZABLE)
+        # self.screen is the actual screen. Everything should be drawn on
+        # self.g, because that screen will be resized and drawn onto
+        # the real screen
+        #
+        # Also, in case you are wondering, this basically just checks if
+        # the enable resizing argument is true or not, and just adjusts
+        # the parameters accordingly.
+        if enable_resizing:
+            self.screen = pygame.display.set_mode(
+                (self.screen_width, self.screen_height), pygame.RESIZABLE)
+        else:
+            self.screen = pygame.display.set_mode(
+                (self.screen_width, self.screen_height))
+
         pygame.display.set_caption("can pooper's adventures")
         self.g = self.screen.copy()
         self.objects = {}
@@ -242,12 +255,16 @@ class Game:
 
 if __name__ == "__main__":
     enable_level_skipping = False
+    enable_resizing = True
 
     for argument in sys.argv:
         if argument == "--enable-level-skipping":
             enable_level_skipping = True
+        if argument == "--not-resizable":
+            enable_resizing = False
 
-    window = Game(fps=60, enable_level_skipping=enable_level_skipping)
+    window = Game(fps=60, enable_level_skipping=enable_level_skipping,
+                  enable_resizing=enable_resizing)
     pygame.display.set_icon(get_image("assets/canpooper_right.png", 200, 200))
     window.loop()
     pygame.quit()
