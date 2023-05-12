@@ -1,5 +1,4 @@
 import os
-import sys
 
 from entities.bullet import Bullet
 from utils.misc import get_image
@@ -28,7 +27,7 @@ MAX_LEVEL = max(levels)
 
 class Game:
     def __init__(
-            self, fps, enable_level_skipping=False, enable_resizing=True
+            self, fps
     ) -> None:
         self.screen_width = 900
         self.screen_height = 600
@@ -40,12 +39,8 @@ class Game:
         # Also, in case you are wondering, this basically just checks if
         # the enable resizing argument is true or not, and just adjusts
         # the parameters accordingly.
-        if enable_resizing:
-            self.screen = pygame.display.set_mode(
-                (self.screen_width, self.screen_height), pygame.RESIZABLE)
-        else:
-            self.screen = pygame.display.set_mode(
-                (self.screen_width, self.screen_height))
+        self.screen = pygame.display.set_mode(
+            (self.screen_width, self.screen_height), flags=pygame.SCALED, vsync=1)
 
         pygame.display.set_caption("can pooper's adventures")
         self.g = self.screen.copy()
@@ -94,10 +89,6 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
-        if keys[pygame.K_k]:
-            if self.event_ticker == 0 and self.enable_level_skipping:
-                self.event_ticker = 10
-                self.next_level()
 
     # move to next level and display
     def next_level(self):
@@ -189,8 +180,12 @@ class Game:
             self.draw_level(self.level)
             self.objects['player'].die()
 
-        if self.objects['player'].has_reached_objective(self.objects['objective']):
+        if self.objects['player'].collides(self.objects['objective']):
             self.next_level()
+        colliding_booster = self.objects['player'].collides(self.objects['booster'])
+        if colliding_booster is not None:
+            self.objects['player'].firing_cooldown //= 4
+            colliding_booster.kill()
 
         self.bullets.update(self.objects)
 
@@ -215,17 +210,7 @@ class Game:
 
 
 if __name__ == "__main__":
-    enable_level_skipping = False
-    enable_resizing = True
-
-    for argument in sys.argv:
-        if argument == "--enable-level-skipping":
-            enable_level_skipping = True
-        if argument == "--not-resizable":
-            enable_resizing = False
-
-    window = Game(fps=60, enable_level_skipping=enable_level_skipping,
-                  enable_resizing=enable_resizing)
+    window = Game(fps=60)
     pygame.display.set_icon(get_image("assets/canpooper_right.png", 200, 200))
     window.loop()
     pygame.quit()

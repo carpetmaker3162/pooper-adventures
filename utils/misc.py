@@ -6,7 +6,8 @@ image_paths = {
     "enemy": "assets/canpooper_right_angry.png",
     "collidable": "assets/crate.png",
     "objective": "assets/burger.png",
-    "fatal": "assets/lava.png"
+    "fatal": "assets/lava.png",
+    "booster": "assets/booster.png",
 }
 
 cache = {}

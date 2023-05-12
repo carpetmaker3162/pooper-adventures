@@ -67,8 +67,11 @@ class Player(Entity):
                 return True
         return False
 
-    def has_reached_objective(self, objective):
-        return pygame.sprite.collide_rect(self, objective)
+    def collides(self, component):
+        if isinstance(component, pygame.sprite.Group):
+            return pygame.sprite.spritecollideany(self, component)
+        else:
+            return pygame.sprite.collide_rect(self, component)
 
     def update(self, objects: dict, bullets, screen):
         super().update(objects, bullets, screen)

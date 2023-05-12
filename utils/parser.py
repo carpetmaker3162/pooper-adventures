@@ -4,7 +4,7 @@ import json
 from entities.player import Player
 from entities.entity import Entity
 from entities.enemy import Enemy
-from entities.props import Crate, Objective, Lava
+from entities.props import Crate, Objective, Lava, Booster
 
 import pygame
 
@@ -19,10 +19,11 @@ sprite_types = {
     "collidable": Crate,
     "objective": Objective,
     "fatal": Lava,
+    "booster": Booster,
 }
 
 def serialize(component):
-    if isinstance(component, list):
+    if isinstance(component, list) or isinstance(component, pygame.sprite.Group):
         res = []
         for sprite in component:
             res.append(serialize(sprite))

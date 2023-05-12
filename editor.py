@@ -52,7 +52,7 @@ class Button(pygame.sprite.Sprite):
 
 
 class Editor:
-    def __init__(self, fps, imported_level=None) -> None:
+    def __init__(self, fps, imported_level=None, edit=False) -> None:
         self.screen_width = 900
         self.screen_height = 800
         self.fps = fps
@@ -128,6 +128,9 @@ class Editor:
         self.buttons.add(Button(image="assets/arrow_right.png",
                                 x=825, y=725, width=50, height=50,
                                 id="right"))
+        
+        self.imported_level = imported_level
+        self.edit = edit
 
     def get_component(self, x, y, w, h, **kwargs):
         x = x + self.scene_x
@@ -155,19 +158,23 @@ class Editor:
 
     def save(self):
         # find an available file name
-        i = 1
-        while True:
-            fp = f"levels/{i}.json"
-            if not os.path.exists(fp):
-                break
-            i += 1
+        if not self.edit:
+            i = 1
+            while True:
+                fp = f"levels/{i}.json"
+                if not os.path.exists(fp):
+                    break
+                i += 1
+        elif self.edit and self.imported_level is not None:
+            fp = self.imported_level
 
         print(f"Saving level at '{fp}'")
 
         for key, component in self.written_objects.items():
             self.export_data[key] = serialize(component)
 
-        assert not os.path.exists(fp)
+        if not self.edit:
+            assert not os.path.exists(fp)
 
         with open(fp, "w") as f:
             f.write(json.dumps(self.export_data))
@@ -219,16 +226,16 @@ class Editor:
                         self.scene_x += self.screen_width
                     elif button.id == "left":
                         self.scene_x -= self.screen_width
-                        self.scene_x = max(self.scene_x, 0)
+#                        self.scene_x = max(self.scene_x, 0)
                     else:
                         self.delete_mode = False
                         self.change_component(button.id)
         else:
             if self.delete_mode:
                 for key, component in self.written_objects.items():
-                    if not isinstance(component, list):
-                        return
-                    for obj in components:
+                    if type(component) != list and type(component) != pygame.sprite.Group:
+                        continue
+                    for obj in component:
                         if obj.lies_on(x, y):
                             self.written_objects[key].remove(obj)
             else:
@@ -327,10 +334,20 @@ class Editor:
 
 if __name__ == "__main__":
     imported_level = None
-    if len(sys.argv) > 1:
-        imported_level = sys.argv[1]
+    edit = False
+    
+    for argument in sys.argv:
+        if argument.endswith(".json") and os.path.exists(argument):
+            imported_level = argument
+        if argument in ["-e", "--edit"]:
+            edit = True
 
-    editor = Editor(60, imported_level)
+    if imported_level is None and edit:
+        raise ValueError("please pass a level file path to edit the level directly")
+        pygame.quit()
+        exit()
+    
+    editor = Editor(60, imported_level, edit=edit)
     pygame.display.set_icon(
         get_image("assets/canpooper_right_angry.png", 200, 200))
     editor.loop()

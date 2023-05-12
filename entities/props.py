@@ -20,8 +20,8 @@ class Objective(Entity):
         super().__init__("assets/burger.png", spawn, size, -1, 0)
 
 
-class Vial(Entity):
+class Booster(Entity):
     singular = False
-    name = "vial"
+    name = "booster"
     def __init__(self, spawn=(0, 0), size=(50, 50)):
-        super().__init__("assets/none.png", spawn, size, -1, 0)
+        super().__init__("assets/booster.png", spawn, size, -1, 0)
