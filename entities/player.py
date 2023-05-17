@@ -109,16 +109,27 @@ class Player(Entity):
         # moving left
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             self.direction = "left"
-            self.x_speed -= self.x_acceleration
-            if self.x_speed < -self.max_x_speed:
-                self.x_speed = -self.max_x_speed  # Reduce speed to max speed
+
+            # if previously moving right, increase x-acceleration in the other direction to reduce drift
+            if self.x_speed < 0:
+                accel = self.x_acceleration
+            else:
+                accel = self.x_acceleration * 2
+
+            self.x_speed -= accel
+            self.x_speed = max(-self.max_x_speed, self.x_speed)
 
         # moving right
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.direction = "right"
-            self.x_speed += self.x_acceleration
-            if self.x_speed > self.max_x_speed:
-                self.x_speed = self.max_x_speed  # Reduce speed to max speed
+
+            if self.x_speed > 0:
+                accel = self.x_acceleration
+            else:
+                accel = self.x_acceleration * 2
+
+            self.x_speed += accel
+            self.x_speed = min(self.max_x_speed, self.x_speed)
 
         # jumping
         if (keys[pygame.K_UP] or keys[pygame.K_w]) and not self.crouching and self.on_ground:
