@@ -24,7 +24,6 @@ for filename in level_directory:
 
 MAX_LEVEL = max(levels)
 
-
 class Game:
     def __init__(
             self, fps
@@ -182,6 +181,7 @@ class Game:
 
         if self.objects['player'].collides(self.objects['objective']):
             self.next_level()
+
         colliding_booster = self.objects['player'].collides(self.objects['booster'])
         if colliding_booster is not None:
             self.objects['player'].firing_cooldown //= 4

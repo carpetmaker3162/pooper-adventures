@@ -24,7 +24,7 @@ class Entity(pygame.sprite.Sprite):
 
         self.image = get_image(image, self.width, self.height)
         self.rect = self.image.get_rect()
-        self.rect.center = (self.x + self.width/2, self.y + self.height/2)
+        self.rect.topleft = (self.x, self.y)
         self.team = team
 
         self.hp_bar_size = self.width
@@ -68,7 +68,6 @@ class Entity(pygame.sprite.Sprite):
         self.rect.move_ip((dx, dy))
 
     def colliding_at(self, x, y, entities):
-        # returns group of entities
         self.rect.move_ip((x, y))
         colliding = pygame.sprite.spritecollideany(self, entities)
         self.rect.move_ip((-x, -y))
@@ -83,6 +82,9 @@ class Entity(pygame.sprite.Sprite):
 
         if self.hp < 0 and not self.invulnerable:
             self.kill()
+            if hasattr(self, "bullets"):
+                for bullet in self.bullets:
+                    bullet.kill()
 
     def draw_hp_bar(self, screen: pygame.Surface, x_offset=0):
         pos = (self.x - x_offset - ((self.hp_bar_size - self.width)), self.y - 15)

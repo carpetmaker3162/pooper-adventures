@@ -88,13 +88,12 @@ class Player(Entity):
             if self.y_speed < self.terminal_velocity:
                 self.y_speed += self.gravity
         else:
-            # when player is on the ground
             self.y_speed = 0
             self.x_acceleration = self.ground_x_acceleration
 
         # bounce back if player hits the ceilint
         if hitting_ceiling:
-            self.y_speed = -self.y_speed * 0.6  # bounce
+            self.y_speed = 1
 
         
         # de-acceleration
@@ -140,7 +139,6 @@ class Player(Entity):
             self.image = self.left_image
 
         # has to round because floatingpoint imprecision causes issues with pygames coordinate system or something.
-        # fix if a better way is found
         self.move(round(self.x_speed), round(self.y_speed), objects["collidable"])
     
     def respawn(self, timeout):

@@ -16,24 +16,16 @@ class Enemy(Entity):
             facing="left",
             firing_cooldown=1000):
 
-        """
-        Arguments:
-        image:          path of image
-        width:          width of sprite in px
-        height:         height of sprite in px
-        hp:             health points for entity
-        bullet_damage:   damage dealt by its bullets
-        """
         super().__init__(image, spawn, size, hp)
         self.direction = facing
-        self.firing_cooldown = firing_cooldown
         self.team = 2
-        self.hp = hp
-        self.bullet_damage = bullet_damage
-
         self.bullets = pygame.sprite.Group()
         self.last_bullet_fired = -float("inf")
         self.facing = facing
+
+        self.firing_cooldown = firing_cooldown
+        self.hp = hp
+        self.bullet_damage = bullet_damage
     
     def update(self, objects, bullets, screen):
         super().update(objects, bullets, screen)
