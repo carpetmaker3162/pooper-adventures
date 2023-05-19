@@ -1,13 +1,14 @@
 import pygame
 import copy
+import os
 
 image_paths = {
-    "player": "assets/canpooper_right.png",
-    "enemy": "assets/canpooper_right_angry.png",
-    "collidable": "assets/crate.png",
-    "objective": "assets/burger.png",
-    "fatal": "assets/lava.png",
-    "booster": "assets/booster.png",
+    "player": os.path.join("assets", "canpooper_right.png"),
+    "enemy": os.path.join("assets", "canpooper_right_angry.png"),
+    "collidable": os.path.join("assets", "crate.png"),
+    "objective": os.path.join("assets", "burger.png"),
+    "fatal": os.path.join("assets", "lava.png"),
+    "booster": os.path.join("assets", "booster.png"),
 }
 
 cache = {}
