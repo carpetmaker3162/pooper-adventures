@@ -108,7 +108,7 @@ class Game:
             self.objects["player"].respawn(2000)
         else:
             self.level += 1
-            self.objects["player"].respawn(250)
+            self.objects["player"].respawn(10)
 
         self.draw_level(self.level)
 
@@ -142,8 +142,7 @@ class Game:
         self.g.blit(deaths, (10, 100))
 
     def render(self):
-        x_offset = self.objects["player"].x - \
-            self.screen_width // 2  # subtract
+        x_offset = self.objects["player"].x - self.screen_width // 2
         scene_left = self.objects["player"].x - self.screen_width // 2
         scene_right = self.objects["player"].x + self.screen_width
 
