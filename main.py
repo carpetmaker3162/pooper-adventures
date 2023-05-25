@@ -15,6 +15,8 @@ LARGE_TEXT = pygame.font.SysFont("ARIAL", 40)
 levels = []
 level_directory = os.listdir("levels")
 
+BG_WIDTH = 4822 // (684 / 600)
+
 for filename in level_directory:
     try:
         id = int(filename.removesuffix(".json"))
@@ -59,7 +61,6 @@ class Game:
     # to be called when an entire new level has to be loaded
     def draw_level(self, id):
         layout = get_level(id)
-        self.g.fill((255, 255, 255))
         data = display(self.g, layout)
         self.objects.update(data)
 
@@ -88,6 +89,10 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
+        if keys[pygame.K_k]:
+            if self.event_ticker == 0:
+                self.event_ticker = 10
+                self.next_level()
 
     # move to next level and display
     def next_level(self):
@@ -95,8 +100,6 @@ class Game:
 
         for bullet in self.bullets:
             bullet.kill()
-
-        self.g.fill((255, 255, 255))
 
         if self.level >= MAX_LEVEL:
             self.level = 1
@@ -200,7 +203,10 @@ class Game:
             self.process_events()
             pygame.event.pump()
 
-            self.g.fill((255, 255, 255))
+            player_x = self.objects["player"].x
+            self.g.blit(
+                get_image("assets/background.png", 4320, 600),
+                (-(BG_WIDTH//2 + player_x//5), 0))
 
             self.update()
             self.render()
