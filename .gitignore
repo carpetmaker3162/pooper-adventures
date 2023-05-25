@@ -1,8 +1,6 @@
 .DS_Store
 sandbox.py
-assets/.DS_Store
-levels/.DS_Store
-.vscode/.DS_Store
+**/.DS_Store
 assets/old/
 logs.txt
 
