@@ -12,6 +12,14 @@ You are Can Pooper, a Pooper who lives in Canada. One day, you woke up to find t
 - S/down arrow/shift: crouch
 - space to shoot
 
+## Run
+
+```
+$ git clone https://github.com/carpetmaker3162/pooper-adventures
+$ cd pooper-adventures
+$ python3 main.py
+```
+
 ## Editor Guide
 pass a file path as the first command-line argument to import a level into the editor.  
 ex: `python3 editor.py levels/1.json`

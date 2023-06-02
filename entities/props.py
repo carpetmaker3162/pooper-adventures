@@ -6,6 +6,7 @@ class Crate(Entity):
     def __init__(self, spawn=(0, 0), size=(200, 200)):
         super().__init__("assets/crate.png", spawn, size, -1, 0)
 
+
 class Lava(Entity):
     singular = False
     name = "fatal"

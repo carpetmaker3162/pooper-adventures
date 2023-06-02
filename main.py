@@ -89,6 +89,10 @@ class Game:
             if self.event_ticker == 0:
                 self.event_ticker = 10
                 self.show_info = not self.show_info
+        if keys[pygame.K_k]:
+            if self.event_ticker == 0:
+                self.event_ticker = 10
+                self.next_level()
 
     # move to next level and display
     def next_level(self):
