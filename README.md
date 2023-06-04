@@ -40,3 +40,7 @@ Control Panel:
 - Click on the 2 arrows icon to change the orientation of enemies (this only affects enemy sprites)
 
 note that you can only place 1 player and 1 objective for obvious reasons (you can't delete a player or objective with "delete mode" either, because you can just re-place them)
+
+## Credit
+
+credit to earthtraveller1 for the soundtrack and some other stuff I forgot

@@ -8,6 +8,9 @@ import pygame
 
 pygame.init()
 pygame.font.init()
+pygame.mixer.init()
+
+soundtrack = os.path.join("assets", "soundtrack.mp3")
 
 ARIAL = pygame.font.SysFont("ARIAL", 12)
 LARGE_TEXT = pygame.font.SysFont("ARIAL", 40)
@@ -213,5 +216,8 @@ class Game:
 if __name__ == "__main__":
     window = Game(fps=60)
     pygame.display.set_icon(get_image("assets/canpooper_right.png", 200, 200))
+    pygame.mixer.music.load(soundtrack)
+    pygame.mixer.music.play(-1)
     window.loop()
+    pygame.mixer.music.stop()
     pygame.quit()
