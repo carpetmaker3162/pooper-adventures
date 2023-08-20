@@ -3,7 +3,7 @@ Pooper Adventures
 
 ## Plot
 
-You are Can Pooper, a Pooper who lives in Canada. One day, you woke up to find that you're hungry, and that your fridge is empty. So, you decide to venture south into a mystical land called Poopland, rumored to be full of burgers. Unfortunately, there are angry Poopers trying to kill you with their guns, since they don't like outsiders venturing into their land. Luckily though, you brought your own handgun with you...
+You are Can Pooper, a Pooper who lives in Canada. One day, you wake up to find that you're hungry, and that your fridge is empty. So, you decide to venture south into a mystical land called Poopland, rumored to be full of burgers. Unfortunately, there are angry Poopers trying to kill you with their guns, since they don't like outsiders venturing into their land. Luckily though, you brought your own handgun with you...
 
 ## Controls
 - W/up arrow: jump
